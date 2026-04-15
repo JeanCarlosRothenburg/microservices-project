@@ -1,0 +1,4 @@
+bcrypt
+email-validator
+fastapi[standard]
+PyJWT[crypto]

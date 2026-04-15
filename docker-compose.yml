@@ -1,0 +1,46 @@
+version: "3.9"
+
+services:
+  usuario:
+    build: ./services/usuario
+    container_name: usuario
+    ports:
+      - "5002:8000"
+    secrets:
+      - private_key
+    environment:
+      PRIVATE_KEY_PATH: /run/secrets/private_key
+
+  estoque:
+    build: ./services/estoque
+    container_name: estoque
+    ports:
+      - "5003:8000"
+    secrets:
+      - public_key
+    environment:
+      PUBLIC_KEY_PATH: /run/secrets/public_key
+
+  pedido:
+    build: ./services/pedido
+    container_name: pedido
+    ports:
+      - "5004:8000"
+    secrets:
+      - public_key
+
+  nginx:
+    build: ./gateway
+    container_name: nginx
+    ports:
+      - "80:80"
+    depends_on:
+      - usuario
+      - estoque
+      - pedido
+
+secrets:
+  private_key:
+    file: private_key.pem
+  public_key:
+    file: public_key.pem
