@@ -21,7 +21,6 @@ func TestInvalidRefundWithInvalidPaymentStatus(t *testing.T) {
 			ID: "1",
 			OrderID: "1",
 			Amount: 100,
-			Method: entity.MethodCredit,
 			Status: status,
 		}
 	
@@ -41,7 +40,6 @@ func TestInvalidRefundWithInvalidCancelUser(t *testing.T) {
 		ID: "1",
 		OrderID: "1",
 		Amount: 100,
-		Method: entity.MethodCredit,
 		Status: entity.PaymentApproved,
 	}
 
@@ -59,7 +57,6 @@ func TestValidRefundWithUserCancelUser(t *testing.T) {
 		ID: "1",
 		OrderID: "1",
 		Amount: 100,
-		Method: entity.MethodCredit,
 		Status: entity.PaymentApproved,
 	}
 
@@ -81,7 +78,6 @@ func TestValidRefundWithStoreCancelUser(t *testing.T) {
 		ID: "1",
 		OrderID: "1",
 		Amount: 100,
-		Method: entity.MethodCredit,
 		Status: entity.PaymentApproved,
 	}
 

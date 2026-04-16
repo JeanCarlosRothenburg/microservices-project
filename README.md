@@ -59,21 +59,22 @@ Microsserviço responsável por processar pagamentos
 **Arquitetura:** Clean Architecture
 **Linguagem:** Golang
 **Bibliotecas:**
+**Cobertura de testes:** 100%
 
 **Requisitos funcionais**
 
-| Requisito | Descrição                                      |
-| :-------: | :--------------------------------------------- |
-|   RF-01   | O sistema deve processar pagamentos de pedidos |
-|   RF-02   | O sistema deve reembolsar pagamentos           |
+| Identificador | Descrição                                      |
+| :-----------: | :--------------------------------------------- |
+|     RF-01     | O sistema deve processar pagamentos de pedidos |
+|     RF-02     | O sistema deve reembolsar pagamentos           |
 
 **Regras de negócio**
 
-| Regra de negócio | Descrição                                                                                      |
-| :--------------: | :--------------------------------------------------------------------------------------------- |
-|      RN-01       | O pagamento deve ser processado somente se o valor do pedido for maior que R$00,00             |
-|      RN-02       | O pagamento deve ser processado somente se o valor do pedido estiver com o status `PENDENTE`   |
-|      RN-03       | Para pagamentos com cartão deve ser validado o número do cartão                                |
-|      RN-04       | Pagamentos devem ser reembolsados somente se o status do pedido for `APROVADO`                 |
-|      RN-05       | Para cancelamentos efetuados por usuários o reembolso será de 70% do valor total do pedido     |
-|      RN-06       | Para cancelamento efetuados pela loja o reembolso será correspondente ao valor total do pedido |
+| Identificador | Descrição                                                                                      |
+| :-----------: | :--------------------------------------------------------------------------------------------- |
+|     RN-01     | O pagamento deve ser processado somente se o valor do pedido for maior que R$00,00             |
+|     RN-02     | O pagamento deve ser processado somente se o valor do pedido estiver com o status `PENDENTE`   |
+|     RN-03     | Para pagamentos com cartão deve ser validado o número do cartão                                |
+|     RN-04     | Pagamentos devem ser reembolsados somente se o status do pedido for `APROVADO`                 |
+|     RN-05     | Para cancelamentos efetuados por usuários o reembolso será de 70% do valor total do pedido     |
+|     RN-06     | Para cancelamento efetuados pela loja o reembolso será correspondente ao valor total do pedido |
