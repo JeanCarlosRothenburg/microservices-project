@@ -29,6 +29,10 @@ A aplicação segue uma arquitetura de microsserviços, sendo composta por três
 
 - Realização de testes unitários
 
+### Black (only dev)
+
+- formatador de código _opinated_ baseado no PEP 8
+
 ---
 
 ## Microsserviços de Domínio
