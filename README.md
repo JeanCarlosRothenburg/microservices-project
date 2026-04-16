@@ -1,61 +1,57 @@
-# Descrição do Projeto
+# Objetivo do projeto
 
-Este projeto foi desenvolvido como proposta para o primeiro trabalho da disciplina de DevOps.
+O projeto tem como objetivo aplicar os conhecimentos de **microsserviços**, **containerização** e **orquestração de containers** obtidos na disciplina de DevOps.
 
-A aplicação segue uma arquitetura de microsserviços, sendo composta por três APIs RESTful de domínio independentes, que comunicam-se entre si por meio de requisições HTTP.
+# Padrões de arquitetura de microsserviços
 
----
+Foram aplicados dois padrões de arquitetura de microsserviços para a aplicação.
 
-## 📦 Libs utilizadas
+### API-Gateway
 
-### FastAPI
+**Objetivos**
 
-- Criação de endpoints HTTP para as APIs REST
-- Autenticação entre os microsserviços
+- Fornecer um canal central de entrada para as requisições realizadas para a aplicação
 
-### PyJWT:
+- Realizar o roteamento para os microsserviços de domínio apropriados
 
-- Geração e validação de tokens JWT
+- Realizar a autenticação através da validação do token JWT
 
-### bcrypt
+  **Ferramenta:** Nginx
 
-- Geração e validação de hash para senhas dos usuários
+### Choreography-based Saga
 
-### email-validator
+**Objetivos**
 
-- Validação do formato do email informado para login
+- Publicação de eventos em um _message broker_
+- Gerenciar transações que envolvem múltiplos microsserviços
+- Garantir a consistência dos dados caso ocorram falhas
 
-### pytest (only dev)
+**Ferramenta:** RabbitMQ
 
-- Realização de testes unitários
+# Comunicação
 
-### Black (only dev)
+A comunicação entre os microsserviços será estabelecida obedecendo a arquitetura REST, através de requisições seguindo o protocolo HTTP.
 
-- formatador de código _opinated_ baseado no PEP 8
+# Microsserviços
 
----
+O projeto conta com quatro microsserviços de domínio.
 
-## Microsserviços de Domínio
+## Auth-Service
 
-### Usuário
+Microsserviço responsável pela autenticação do usuário e geração do token JWT para validação de requisições para outros microsserviços da aplicação.
 
-Contém o domínio do negócio referente aos usuários do sistema.
+**Arquitetura:** Camadas
+**Linguagem:** Python
+**Bibliotecas:** [bcrypt](https://pypi.org/project/bcrypt/), [PyJWT](https://pypi.org/project/PyJWT/) e [email-validator](https://pypi.org/project/email-validator/)
 
-#### Requisitos funcionais
+## Estoque
 
-| ID    | Descrição                                         |
-| ----- | ------------------------------------------------- |
-| RF-01 | O sistema deve permitir a autenticação no sistema |
-| RF-02 | O sistema deve permitir o gerenciamento da conta  |
-
-### Regras de negócio
-
-| ID    | Descrição                                                    |
-| ----- | ------------------------------------------------------------ |
-| RN-01 | O sistema deve permitir o login com usuário e senha          |
-| RN-02 | O usuário deve poder alterar o e-mail e a senha de sua conta |
-| RN-03 | O usuário deve poder excluir sua conta                       |
+Microsserviço responsável por gerenciar o estoque.
 
 ## Pedido
 
-## Estoque
+Microsserviço responsável por processar pedidos
+
+## Pagamento
+
+Microsserviço responsável por processar pagamentos
