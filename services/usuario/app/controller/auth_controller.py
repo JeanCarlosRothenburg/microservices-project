@@ -22,3 +22,8 @@ def login(request: LoginRequestDTO):
         return {"access_token": token, "token_type": "bearer"}
     except ValueError as e:
         raise HTTPException(status_code=401, detail=str(e))
+
+
+@router.get("/teste")
+def teste(request):
+    return "Teste com sucesso"
