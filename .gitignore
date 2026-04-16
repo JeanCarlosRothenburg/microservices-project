@@ -1,6 +1,13 @@
+# Python Cache
 __pycache__
 *pyc
-.vscode
+
+# Pytest Cache
 .pytest_cache
+
+## VS Code
+.vscode
+
+# Secrets
+keys
 *pem
-.gitignore
