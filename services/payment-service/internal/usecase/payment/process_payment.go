@@ -6,8 +6,8 @@ import (
 	"github.com/JeanCarlosRothenburg/payment-service/internal/domain/entity"
 )
 
-type usecase struct {
-	repo PaymentRepository
+func generateID() string {
+	return "payment-123"
 }
 
 func (u *usecase) ProcessPayment(
@@ -18,28 +18,24 @@ func (u *usecase) ProcessPayment(
 		ID: generateID(),
 		OrderID: input.OrderID,
 		Amount: input.Amount,
-		Method: input.Method,
+		Method: entity.PaymentMethod(input.Method),
 		Status: entity.PaymentPending,
 	}
 
-	isPaid, err := p.Process()
+	err := p.Process()
 
 	if err != nil {
 		return ProcessPaymentOutput{}, err
 	}
 
-	if !isPaid {
-		return ProcessPaymentOutput{}, err
-	}
-
-	err := u.repo.Save(ctx, *p)
-
+	err = u.repo.Save(ctx, p)
+ 
 	if err != nil {
 		return ProcessPaymentOutput{}, err
 	}
 
 	return ProcessPaymentOutput{
 		PaymentID: p.ID,
-		Status: p.Status
+		Status: string(p.Status),
 	}, nil
 }

@@ -1,5 +1,5 @@
 package entity
-
+ 
 import "errors"
 
 type PaymentStatus string

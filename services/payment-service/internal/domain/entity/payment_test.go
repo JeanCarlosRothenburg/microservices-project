@@ -153,5 +153,4 @@ func TestValidProcess(t *testing.T) {
 		if p.Status != entity.PaymentApproved {
 			t.Errorf("Deve ser possível processar pagamentos que estejam pendentes e com valor superior a zero")
 		}
-	
 }
