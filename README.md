@@ -16,7 +16,7 @@ Foram aplicados dois padrões de arquitetura de microsserviços para a aplicaç�
 
 - Realizar a autenticação através da validação do token JWT
 
-  **Ferramenta:** Nginx
+**Ferramenta:** Nginx
 
 ### Choreography-based Saga
 
@@ -54,7 +54,7 @@ Microsserviço responsável por processar pedidos
 
 ## Payment-Service
 
-Microsserviço responsável por processar pagamentos
+Microsserviço responsável por processar pagamentos.
 
 **Arquitetura:** Clean Architecture
 **Linguagem:** Golang

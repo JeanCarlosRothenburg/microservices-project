@@ -20,6 +20,9 @@ services:
       - public_key
     environment:
       PUBLIC_KEY_PATH: /run/secrets/public_key
+      RABBITMQ_URL: amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672/
+    depends_on:
+      - rabbitmq
 
   estoque:
     build: ./services/estoque
@@ -49,6 +52,15 @@ services:
       - payment-service
       - estoque
       - pedido
+
+  rabbitmq:
+    image: rabbitmq:4.2.5-management-alpine
+    ports:
+      - "5672:5672" # AMQP
+      - "15672:15672" # Painel de gestão
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
 
 secrets:
   private_key:

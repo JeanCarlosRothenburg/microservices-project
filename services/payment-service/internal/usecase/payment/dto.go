@@ -9,7 +9,7 @@ type ProcessPaymentInput struct {
 
 type ProcessPaymentOutput struct {
 	PaymentID string
-	Status: bool
+	Status string
 }
 
 
@@ -21,5 +21,5 @@ type RefundPaymentInput struct {
 
 type RefundPaymentOutput struct {
 	RefundedAmount float64
-	Status bool
+	Status string
 }
