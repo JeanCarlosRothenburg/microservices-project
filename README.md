@@ -74,7 +74,31 @@ Microsserviço responsável por gerenciar o estoque.
 
 ## Pedido
 
-Microsserviço responsável por processar pedidos.
+Microsserviço responsável por processar pedidos, coordenando a verificação de estoque e o processamento de pagamento via requisições REST.
+
+**Arquitetura:** Camadas
+**Linguagem:** Python
+**Bibliotecas:** [FastAPI](https://pypi.org/project/fastapi/), [PyJWT](https://pypi.org/project/PyJWT/), [httpx](https://pypi.org/project/httpx/)
+**Cobertura de testes:** Acima de 75%
+
+**Requisitos funcionais**
+
+| Identificador | Descrição                                      |
+| :-----------: | :--------------------------------------------- |
+|     RF-01     | O sistema deve criar um pedido                 |
+|     RF-02     | O sistema deve cancelar um pedido              |
+|     RF-03     | O sistema deve consultar o status de um pedido |
+|     RF-04     | O sistema deve listar os pedidos do usuário    |
+
+**Regras de negócio**
+
+| Identificador | Descrição                                                                       |
+| :-----------: | :------------------------------------------------------------------------------ |
+|     RN-01     | Um pedido só pode ser criado se o usuário estiver autenticado                   |
+|     RN-02     | O status inicial de todo pedido deve ser `PENDENTE`                             |
+|     RN-03     | Um pedido só pode ser cancelado se estiver com status `PENDENTE` ou `APROVADO`  |
+|     RN-04     | Se o pagamento falhar, o pedido deve ser marcado como `CANCELADO`               |
+|     RN-05     | Um pedido deve conter ao menos 1 item                                           |
 
 ## Payment-Service
 
