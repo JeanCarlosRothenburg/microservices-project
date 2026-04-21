@@ -1,4 +1,4 @@
-bcrypt
-email-validator
 fastapi[standard]
 PyJWT[crypto]
+sqlalchemy
+psycopg2-binary

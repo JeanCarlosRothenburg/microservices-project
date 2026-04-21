@@ -16,7 +16,7 @@ Foram aplicados dois padrões de arquitetura de microsserviços para a aplicaç�
 
 - Realizar a autenticação através da validação do token JWT
 
-**Ferramenta:** Nginx
+  **Ferramenta:** Nginx
 
 ### Choreography-based Saga
 
@@ -48,9 +48,33 @@ Microsserviço responsável pela autenticação do usuário e geração do token
 
 Microsserviço responsável por gerenciar o estoque.
 
+**Arquitetura:** Camadas
+**Linguagem:** Python
+**Bibliotecas:** [FastAPI](https://pypi.org/project/fastapi/), [PyJWT](https://pypi.org/project/PyJWT/)
+**Cobertura de testes:** Acima de 70%
+
+**Requisitos funcionais**
+
+| Identificador | Descrição                                               |
+| :-----------: | :------------------------------------------------------ |
+|     RF-01     | O sistema deve cadastrar produtos no estoque            |
+|     RF-02     | O sistema deve listar e buscar produtos                 |
+|     RF-03     | O sistema deve atualizar a quantidade em estoque        |
+|     RF-04     | O sistema deve verificar a disponibilidade de produtos  |
+|     RF-05     | O sistema deve remover produtos do estoque              |
+|     RF-06     | O sistema deve atualizar os dados de um produto         |
+
+**Regras de negócio**
+
+| Identificador | Descrição                                                                                 |
+| :-----------: | :---------------------------------------------------------------------------------------- |
+|     RN-01     | A quantidade em estoque não pode ser negativa                                             |
+|     RN-02     | O preço do produto deve ser maior que R$0,00                                              |
+|     RN-03     | O SKU deve ser único por produto                                                          |
+
 ## Pedido
 
-Microsserviço responsável por processar pedidos
+Microsserviço responsável por processar pedidos.
 
 ## Payment-Service
 
@@ -58,7 +82,6 @@ Microsserviço responsável por processar pagamentos.
 
 **Arquitetura:** Clean Architecture
 **Linguagem:** Golang
-**Bibliotecas:**
 **Cobertura de testes:** 100%
 
 **Requisitos funcionais**
