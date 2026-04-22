@@ -1,20 +1,17 @@
 package main
 
 import (
-	"context"
-	"log"
-
+	"github.com/JeanCarlosRothenburg/payment-service/internal/infrastructure/messaging/rabbitmq"
 	"github.com/JeanCarlosRothenburg/payment-service/internal/usecase/payment"
 )
 
  func main() {
-	ctx := context.Background()
+	conn := rabbitmq.NewConnection()
+	defer conn.Close()
+
 	// TODO: implementar repositório do BD
-	repo := payment.PaymentRepositoryMock{}
+	repo := &payment.PaymentRepositoryMock{}
 	uc := payment.NewUseCase(repo)
 
-	for {
-		// Evento recebido do RabbitMQ
-	}
-	 
+	rabbitmq.NewConsumer(conn.Channel(), uc).Start()
 }
