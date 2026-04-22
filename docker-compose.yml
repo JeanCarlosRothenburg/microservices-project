@@ -1,6 +1,48 @@
-version: '3.8'
+version: "3.8"
 
 services:
+  auth-service:
+    build: ./services/auth-service
+    container_name: auth-service
+    ports:
+      - "5000:8000"
+    secrets:
+      - private_key
+    environment:
+      PRIVATE_KEY_PATH: /run/secrets/private_key
+
+  payment-service:
+    build: ./services/payment-service
+    container_name: payment-service
+    ports:
+      - "5001:8000"
+    secrets:
+      - public_key
+    environment:
+      PUBLIC_KEY_PATH: /run/secrets/public_key
+      RABBITMQ_URL: amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672/
+    depends_on:
+      - rabbitmq
+
+  nginx:
+    build: ./api-gateway
+    container_name: nginx
+    ports:
+      - "80:80"
+    depends_on:
+      - auth-service
+      - payment-service
+      - estoque
+      - pedido
+
+  rabbitmq:
+    image: rabbitmq:4.2.5-management-alpine
+    ports:
+      - "5672:5672" # AMQP
+      - "15672:15672" # Painel de gestão
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
   estoque-db:
     image: postgres:16
     container_name: estoque-db
