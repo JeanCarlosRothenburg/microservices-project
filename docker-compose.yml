@@ -68,7 +68,7 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: estoque
     ports:
-      - "5433:5432"
+      - "5433:5433"
     volumes:
       - estoque_data:/var/lib/postgresql/data
     healthcheck:
@@ -125,7 +125,7 @@ services:
     ports:
       - "8000:8000"
     environment:
-      DATABASE_URL: postgresql://pedido_user:pedido_pass@db:5432/pedido_db
+      DATABASE_URL: postgresql://pedido_user:pedido_pass@db:5435/pedido_db
       USE_MOCK: "true"
       DISABLE_AUTH: "true"
       AUTO_APPROVE: "false"
