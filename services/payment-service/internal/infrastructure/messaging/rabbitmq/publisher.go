@@ -27,11 +27,11 @@ func (p *Publisher) Publish(queue string, body any) error {
 			ContentType: "application/json",
 			DeliveryMode: amqp.Persistent,
 			Body: payload,
-		}
+		},
 	)
 
 	if err != nil {
-		log.Fatafl("Erro ao publicar na fila \"%v\": %v", queue, err)
+		log.Fatalf("Erro ao publicar na fila \"%v\": %v", queue, err)
 	}
 
 	log.Printf("Evento publicado na fila \"%v\"", queue)

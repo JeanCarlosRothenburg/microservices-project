@@ -50,7 +50,7 @@ func (c *Consumer) handle(msg amqp.Delivery) {
 		return
 	}
 
-	output, err = c.paymentUC.ProcessPayment(context.Background(), input)
+	output, err := c.paymentUC.ProcessPayment(context.Background(), input)
 	if err != nil {
 		log.Printf("Erro ao processar pagamento: %v", err)
 		msg.Nack(false, true)

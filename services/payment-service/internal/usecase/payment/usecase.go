@@ -1,10 +1,12 @@
 package payment
 
+import "github.com/JeanCarlosRothenburg/payment-service/internal/domain/repository"
+
 type usecase struct {
-	repo PaymentRepository
+	repo repository.PaymentRepository
 }
 
-func NewUseCase(repo PaymentRepository) UseCase {
+func NewUseCase(repo repository.PaymentRepository) UseCase {
 	return &usecase{
 		repo: repo,
 	}

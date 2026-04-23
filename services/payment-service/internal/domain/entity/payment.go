@@ -15,7 +15,7 @@ const (
 
 	// Métodos de pagamento
 	MethodDebit  PaymentMethod = "DEBITO"
-	MethodCredit PaymentMethod = "CREDIT"
+	MethodCredit PaymentMethod = "CREDITO"
 	MethodPix    PaymentMethod = "PIX"
 
 	// Usuário de cancelamento
