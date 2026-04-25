@@ -3,3 +3,4 @@ PyJWT[crypto]
 httpx
 sqlalchemy
 psycopg2-binary
+aio_pika

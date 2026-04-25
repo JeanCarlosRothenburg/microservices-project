@@ -1,8 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 
 from app.controller.schemas import CriarPedidoRequest, PedidoResponse
 from app.infrastructure.database.connection import SessionLocal
+from app.infrastructure.messaging.rabbitmq.publisher import Publisher
 from app.infrastructure.security.auth_dependency import get_current_user
 from app.repositories.pedido_repository_postgres import PedidoRepositoryPostgres
 from app.services.pedido_service import PedidoService
@@ -19,8 +20,7 @@ def get_db():
 
 
 def get_service(db: Session = Depends(get_db)) -> PedidoService:
-    repository = PedidoRepositoryPostgres(db)
-    return PedidoService(repository)
+    return PedidoService(PedidoRepositoryPostgres(db))
 
 
 def _to_response(pedido) -> PedidoResponse:
@@ -34,10 +34,26 @@ def _to_response(pedido) -> PedidoResponse:
 
 
 @router.post("/", response_model=PedidoResponse, status_code=201)
-def criar_pedido(request: CriarPedidoRequest, user: dict = Depends(get_current_user), service: PedidoService = Depends(get_service)):
+async def criar_pedido(
+    request: Request,
+    body: CriarPedidoRequest,
+    user: dict = Depends(get_current_user),
+    service: PedidoService = Depends(get_service),
+):
     try:
-        itens = [i.model_dump() for i in request.itens]
+        itens = [i.model_dump() for i in body.itens]
         pedido = service.criar_pedido(user["email"], itens)
+
+        rabbitmq = request.app.state.rabbitmq
+        channel = await rabbitmq.channel()
+        publisher = Publisher(channel)
+        await publisher.publish("order.created", {
+            "order_id": pedido.id,
+            "usuario_email": pedido.usuario_email,
+            "valor_total": pedido.valor_total,
+            "itens": itens,
+        })
+
         return _to_response(pedido)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
