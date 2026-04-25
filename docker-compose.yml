@@ -36,7 +36,7 @@ services:
       POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
       POSTGRES_DB: payments
     volumes:
-      - payment_postgres_data:/var/lib/postgresql/data
+      - payment_postgres_data:/var/lib/postgresql
 
   # FIM - Microsserviço de pagamento
 
@@ -53,6 +53,7 @@ services:
 
   rabbitmq:
     image: rabbitmq:4.2.5-management-alpine
+    container_name: rabbitmq
     ports:
       - "5672:5672" # AMQP
       - "15672:15672" # Painel de gestão
