@@ -105,7 +105,7 @@ services:
     depends_on:
       - estoque-db
 
-  db:
+  pedido-db:
     image: postgres:16
     container_name: pedido_db
     environment:
@@ -128,13 +128,16 @@ services:
     ports:
       - "8000:8000"
     environment:
-      DATABASE_URL: postgresql://pedido_user:pedido_pass@db:5432/pedido_db
+      DATABASE_URL: postgresql://pedido_user:pedido_pass@pedido-db:5432/pedido_db  # era @db:
       USE_MOCK: "true"
       DISABLE_AUTH: "true"
       AUTO_APPROVE: "false"
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672/
     depends_on:
-      db:
+      pedido-db:
         condition: service_healthy
+      rabbitmq:
+        condition: service_started
 
 volumes:
   payment_postgres_data:
