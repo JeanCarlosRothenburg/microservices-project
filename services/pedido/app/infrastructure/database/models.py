@@ -1,7 +1,7 @@
 from sqlalchemy import Column, String, Float, Integer, ForeignKey, Enum as SAEnum
 from sqlalchemy.orm import relationship
 from app.infrastructure.database.connection import Base
-from app.domain.pedido import StatusPedido
+from app.domain.pedido import StatusPedido, MetodoPagamento
 
 
 class PedidoModel(Base):
@@ -10,6 +10,7 @@ class PedidoModel(Base):
     id = Column(String, primary_key=True)
     usuario_email = Column(String, nullable=False)
     status = Column(SAEnum(StatusPedido), nullable=False)
+    metodo_pagamento = Column(SAEnum(MetodoPagamento), nullable=False)
     itens = relationship("ItemPedidoModel", back_populates="pedido", cascade="all, delete-orphan")
 
 

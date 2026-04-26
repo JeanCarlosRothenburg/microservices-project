@@ -42,7 +42,7 @@ async def criar_pedido(
 ):
     try:
         itens = [i.model_dump() for i in body.itens]
-        pedido = service.criar_pedido(user["email"], itens)
+        pedido = service.criar_pedido(user["email"], itens, body.metodo_pagamento)
 
         rabbitmq = request.app.state.rabbitmq
         channel = await rabbitmq.channel()
@@ -50,6 +50,7 @@ async def criar_pedido(
         await publisher.publish_order_created({
             "order_id": pedido.id,
             "usuario_email": pedido.usuario_email,
+            "metodo_pagamento": pedido.metodo_pagamento,
             "valor_total": pedido.valor_total,
             "itens": itens,
         })
