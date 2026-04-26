@@ -6,20 +6,18 @@ from app.infrastructure.database.database import engine, Base, SessionLocal
 import app.infrastructure.database.produto_model
 from app.infrastructure.messaging.rabbitmq.connection import RabbitMQConnection
 from app.infrastructure.messaging.rabbitmq.consumer import Consumer
-from app.repositories.produto_repository import ProdutoRepository
+from app.infrastructure.database.produto_repository_postgres import ProdutoRepositoryPostgres
 from app.services.estoque_service import EstoqueService
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Cria tabelas no banco
     Base.metadata.create_all(bind=engine)
 
     db = SessionLocal()
-    produto_repository = ProdutoRepository(db)
+    produto_repository = ProdutoRepositoryPostgres(db)
     estoque_service = EstoqueService(produto_repository)
 
-    # Conecta ao RabbitMQ
     rabbitmq = RabbitMQConnection()
     await rabbitmq.connect()
 
@@ -28,8 +26,8 @@ async def lifespan(app: FastAPI):
 
     task = asyncio.create_task(consumer.start())
 
-    yield 
-    
+    yield
+
     task.cancel()
     db.close()
     await rabbitmq.close()
