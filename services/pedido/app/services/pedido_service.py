@@ -16,7 +16,7 @@ class PedidoService:
     def __init__(self, repository: PedidoRepository):
         self.repository = repository
 
-    def criar_pedido(self, usuario_email: str, itens: list[dict]) -> Pedido:
+    def criar_pedido(self, usuario_email: str, itens: list[dict], metodo_pagamento: str) -> Pedido:
         if not itens:
             raise ValueError("O pedido deve conter ao menos 1 item")
 
@@ -30,6 +30,7 @@ class PedidoService:
             id=str(uuid.uuid4()),
             usuario_email=usuario_email,
             itens=itens_dominio,
+            metodo_pagamento=metodo_pagamento,
         )
 
         self.repository.save(pedido)
