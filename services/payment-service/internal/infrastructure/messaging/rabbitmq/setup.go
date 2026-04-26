@@ -4,7 +4,7 @@ import amqp "github.com/rabbitmq/amqp091-go"
 
 func setup(ch *amqp.Channel) error {
 	err := ch.ExchangeDeclare(
-		"dlx.exchange", "direct", true, false, false, false, nil,
+		"order.created.exchange", "fanout", true, false, false, false, nil,
 	)
 
 	if err != nil {
@@ -20,6 +20,10 @@ func setup(ch *amqp.Channel) error {
 	if err != nil {
 		return err
 	}
+
+	err = ch.QueueBind(
+		"payment.queue", "", "order.created.exchange", false, nil,
+	)
 
 	queues := []string{"payment.approved", "payment.failed"}
 
