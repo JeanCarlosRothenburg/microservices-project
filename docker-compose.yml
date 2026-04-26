@@ -88,12 +88,12 @@ services:
     environment:
       PUBLIC_KEY_PATH: /run/secrets/public_key
       DATABASE_URL: postgresql://postgres:postgres@estoque-db:5432/estoque
-      RABBITMQ_URL: amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672/  # ← adicione isso
+      RABBITMQ_URL: amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672/ # ← adicione isso
     depends_on:
       estoque-db:
         condition: service_healthy
-      rabbitmq:                       
-        condition: service_started    
+      rabbitmq:
+        condition: service_started
 
   pgadmin:
     image: dpage/pgadmin4
@@ -129,11 +129,11 @@ services:
     ports:
       - "8000:8000"
     environment:
-      DATABASE_URL: postgresql://pedido_user:pedido_pass@pedido-db:5432/pedido_db  # era @db:
+      DATABASE_URL: postgresql://pedido_user:pedido_pass@pedido-db:5432/pedido_db # era @db:
       USE_MOCK: "true"
       DISABLE_AUTH: "true"
       AUTO_APPROVE: "false"
-      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672/
+      RABBITMQ_URL: amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672/
     depends_on:
       pedido-db:
         condition: service_healthy
