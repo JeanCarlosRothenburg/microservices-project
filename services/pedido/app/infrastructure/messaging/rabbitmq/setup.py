@@ -9,11 +9,20 @@ async def setup(channel: Channel):
         durable=True,
     )
 
-    await channel.declare_queue(
-        "order.created",
+    # Fanout exchange: copia order.created para todas as filas inscritas
+    order_exchange = await channel.declare_exchange(
+        "order.created.exchange",
+        aio_pika.ExchangeType.FANOUT,
+        durable=True,
+    )
+
+    # Fila exclusiva do pedido-service para receber order.created (se necessário no futuro)
+    order_queue = await channel.declare_queue(
+        "order.created.pedido",
         durable=True,
         arguments={"x-dead-letter-exchange": "dlx.exchange"},
     )
+    await order_queue.bind(order_exchange)
 
     result_queues = [
         "stock.reserved",
