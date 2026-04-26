@@ -88,7 +88,7 @@ services:
     environment:
       PUBLIC_KEY_PATH: /run/secrets/public_key
       DATABASE_URL: postgresql://postgres:postgres@estoque-db:5432/estoque
-      RABBITMQ_URL: amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672/ # ← adicione isso
+      RABBITMQ_URL: amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672/ 
     depends_on:
       estoque-db:
         condition: service_healthy
