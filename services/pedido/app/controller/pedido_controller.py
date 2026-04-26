@@ -47,7 +47,7 @@ async def criar_pedido(
         rabbitmq = request.app.state.rabbitmq
         channel = await rabbitmq.channel()
         publisher = Publisher(channel)
-        await publisher.publish("order.created", {
+        await publisher.publish_order_created({
             "order_id": pedido.id,
             "usuario_email": pedido.usuario_email,
             "valor_total": pedido.valor_total,

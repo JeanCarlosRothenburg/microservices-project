@@ -10,16 +10,17 @@ class Publisher:
     def __init__(self, channel: Channel):
         self._channel = channel
 
-    async def publish(self, queue: str, body: dict):
+    async def publish_order_created(self, body: dict):
+        exchange = await self._channel.get_exchange("order.created.exchange")
         payload = json.dumps(body).encode()
 
-        await self._channel.default_exchange.publish(
+        await exchange.publish(
             aio_pika.Message(
                 body=payload,
                 content_type="application/json",
                 delivery_mode=aio_pika.DeliveryMode.PERSISTENT,
             ),
-            routing_key=queue,
+            routing_key="",  # fanout ignora routing_key
         )
 
-        logger.info(f'Evento publicado na fila "{queue}"')
+        logger.info('Evento publicado no exchange "order.created.exchange"')
