@@ -28,7 +28,7 @@ async def lifespan(app: FastAPI):
     await rabbitmq.close()
 
 
-app = FastAPI(title="Pedido Service", lifespan=lifespan)
+app = FastAPI(title="Pedido Service", lifespan=lifespan, root_path="/pedidos")
 
 
 @app.get("/health")
@@ -40,4 +40,5 @@ app.include_router(pedido_router, prefix="/pedidos", tags=["Pedidos"])
 
 if os.getenv("DISABLE_AUTH", "false").lower() == "true":
     from app.infrastructure.security.auth_dependency import get_current_user
+
     app.dependency_overrides[get_current_user] = lambda: {"email": "user@email.com"}

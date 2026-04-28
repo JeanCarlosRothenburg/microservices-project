@@ -1,24 +1,16 @@
 services:
+  # Serviço de autenticação
   auth-service:
     build: ./services/auth-service
     container_name: auth-service
-    ports:
-      - "5001:8000"
-    secrets:
-      - private_key
     environment:
-      PRIVATE_KEY_PATH: /run/secrets/private_key
+      JWT_SECRET: ${JWT_SECRET}
 
   # INíCIO - Microsserviço de pagamento
   payment-service:
     build: ./services/payment-service
     container_name: payment-service
-    ports:
-      - "5002:8000"
-    secrets:
-      - public_key
     environment:
-      PUBLIC_KEY_PATH: /run/secrets/public_key
       RABBITMQ_URL: ${RABBITMQ_URL}
       POSTGRES_DB_URL: ${POSTGRES_DB_URL}
     depends_on:
@@ -80,14 +72,10 @@ services:
   estoque:
     build: ./services/estoque
     container_name: estoque
-    ports:
-      - "5003:8000"
-    secrets:
-      - public_key
     environment:
-      PUBLIC_KEY_PATH: /run/secrets/public_key
       DATABASE_URL: postgresql://postgres:postgres@estoque-db:5432/estoque
       RABBITMQ_URL: amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672/
+      JWT_SECRET: ${JWT_SECRET}
     depends_on:
       estoque-db:
         condition: service_healthy
@@ -125,12 +113,10 @@ services:
   pedido:
     build: ./services/pedido
     container_name: pedido_service
-    ports:
-      - "8000:8000"
     environment:
+      JWT_SECRET: ${JWT_SECRET}
       DATABASE_URL: postgresql://pedido_user:pedido_pass@pedido-db:5432/pedido_db # era @db:
       USE_MOCK: "true"
-      DISABLE_AUTH: "true"
       AUTO_APPROVE: "false"
       RABBITMQ_URL: amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672/
     depends_on:
@@ -143,9 +129,3 @@ volumes:
   payment_postgres_data:
   estoque_data:
   pedido_pgdata:
-
-secrets:
-  private_key:
-    file: ./keys/private_key.pem
-  public_key:
-    file: ./keys/public_key.pem
