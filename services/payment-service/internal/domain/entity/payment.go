@@ -1,5 +1,5 @@
 package entity
- 
+
 import "errors"
 
 type PaymentStatus string
@@ -8,14 +8,14 @@ type CancelUser string
 
 const (
 	// Status do pedido
-	PaymentPending   PaymentStatus = "PENDENTE"
-	PaymentApproved  PaymentStatus = "APROVADO"
-	PaymentRefunded  PaymentStatus = "REEMBOLSADO"
-	PaymentFailed    PaymentStatus = "RECUSADO"
+	PaymentPending  PaymentStatus = "PENDENTE"
+	PaymentApproved PaymentStatus = "APROVADO"
+	PaymentRefunded PaymentStatus = "REEMBOLSADO"
+	PaymentFailed   PaymentStatus = "RECUSADO"
 
 	// Métodos de pagamento
-	MethodDebit  PaymentMethod = "DEBITO"
-	MethodCredit PaymentMethod = "CREDITO"
+	MethodDebit  PaymentMethod = "CARTAO_DEBITO"
+	MethodCredit PaymentMethod = "CARTAO_CREDITO"
 	MethodPix    PaymentMethod = "PIX"
 
 	// Usuário de cancelamento
@@ -24,19 +24,19 @@ const (
 )
 
 var (
-	ErrRefundInvalidStatus           = errors.New("Somente pagamentos aprovados podem ser reembolsados")
-	ErrRefundInvalidUser			 = errors.New("Usuário de cancelamento inválido")
-	ErrPaymentInvalidStatus			 = errors.New("O pagamento não está pendente")
-	ErrPaymentInvalidValue 			 = errors.New("O valor é inválido para o pagamento")
+	ErrRefundInvalidStatus  = errors.New("Somente pagamentos aprovados podem ser reembolsados")
+	ErrRefundInvalidUser    = errors.New("Usuário de cancelamento inválido")
+	ErrPaymentInvalidStatus = errors.New("O pagamento não está pendente")
+	ErrPaymentInvalidValue  = errors.New("O valor é inválido para o pagamento")
 )
 
 // Modelo de dados do pagamento
 type Payment struct {
-	ID     string
+	ID      string
 	OrderID string
-	Amount float64
-	Method PaymentMethod
-	Status PaymentStatus
+	Amount  float64
+	Method  PaymentMethod
+	Status  PaymentStatus
 }
 
 // Método para reembolsar o pagamento
@@ -46,7 +46,7 @@ func (p *Payment) Refund(user CancelUser) (float64, error) {
 	}
 
 	refundPercent, err := GetRefundPercent(user)
-	
+
 	if err != nil {
 		return 0, err
 	}
@@ -91,12 +91,12 @@ func PaymentValueIsMoreThanZero(amount float64) bool {
 // Função para obter o percentual do valor total que será reembolsado
 func GetRefundPercent(user CancelUser) (float64, error) {
 	switch user {
-		case CancelByUser:
-			return 0.7, nil
-		case CancelByStore:
-			return 1, nil
-		default:
-			return 0, ErrRefundInvalidUser
+	case CancelByUser:
+		return 0.7, nil
+	case CancelByStore:
+		return 1, nil
+	default:
+		return 0, ErrRefundInvalidUser
 	}
-	
+
 }

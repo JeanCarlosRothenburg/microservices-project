@@ -8,17 +8,17 @@ import (
 
 // Define o modelo para o mock do repositório
 type PaymentRepositoryMock struct {
-	SaveFunc func(entity.Payment) error
+	SaveFunc func(entity.Payment) (entity.Payment, error)
 	FindFunc func(ID string) (*entity.Payment, error)
 }
 
 // Método de salvamento do mock do repositório
-func (mock *PaymentRepositoryMock) Save(ctx context.Context, p entity.Payment) error {
+func (mock *PaymentRepositoryMock) Save(ctx context.Context, p entity.Payment) (entity.Payment, error) {
 	if mock.SaveFunc != nil {
 		return mock.SaveFunc(p)
 	}
 
-	return nil
+	return p, nil
 }
 
 // Método de busca por ID do mock do repositório

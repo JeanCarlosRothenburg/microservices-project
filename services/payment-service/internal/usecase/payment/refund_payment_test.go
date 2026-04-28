@@ -1,9 +1,9 @@
 package payment_test
 
 import (
-	"testing"
-	"errors"
 	"context"
+	"errors"
+	"testing"
 
 	"github.com/JeanCarlosRothenburg/payment-service/internal/domain/entity"
 	"github.com/JeanCarlosRothenburg/payment-service/internal/usecase/payment"
@@ -19,7 +19,7 @@ func TestRefundProcessWithNonExistentPayment(t *testing.T) {
 	}
 	uc := payment.NewUseCase(repo)
 	input := payment.RefundPaymentInput{
-		PaymentID: "",
+		PaymentID:  "",
 		CancelUser: string(entity.CancelByStore),
 	}
 
@@ -36,17 +36,17 @@ func TestRefundProcessWithInvalidCancelUser(t *testing.T) {
 	repo := &payment.PaymentRepositoryMock{
 		FindFunc: func(id string) (*entity.Payment, error) {
 			return &entity.Payment{
-				ID: "1",
+				ID:      "1",
 				OrderID: "1",
-				Amount: 100,
-				Method: entity.MethodCredit,
-				Status: entity.PaymentApproved,
+				Amount:  100,
+				Method:  entity.MethodCredit,
+				Status:  entity.PaymentApproved,
 			}, nil
 		},
 	}
 	uc := payment.NewUseCase(repo)
 	input := payment.RefundPaymentInput{
-		PaymentID: "1",
+		PaymentID:  "1",
 		CancelUser: string(entity.CancelUser("USUARIO_INVALIDO")),
 	}
 
@@ -61,22 +61,22 @@ func TestRefundProcessWithInvalidCancelUser(t *testing.T) {
 func TestRefundProcessWithErrorOnSave(t *testing.T) {
 	ctx := context.Background()
 	repo := &payment.PaymentRepositoryMock{
-		SaveFunc: func(p entity.Payment) error {
-			return errors.New("Teste de erro no salvamento")
+		SaveFunc: func(p entity.Payment) (entity.Payment, error) {
+			return p, errors.New("Teste de erro no salvamento")
 		},
 		FindFunc: func(id string) (*entity.Payment, error) {
 			return &entity.Payment{
-				ID: "1",
+				ID:      "1",
 				OrderID: "1",
-				Amount: 100,
-				Method: entity.MethodCredit,
-				Status: entity.PaymentApproved,
+				Amount:  100,
+				Method:  entity.MethodCredit,
+				Status:  entity.PaymentApproved,
 			}, nil
 		},
 	}
 	uc := payment.NewUseCase(repo)
 	input := payment.RefundPaymentInput{
-		PaymentID: "1",
+		PaymentID:  "1",
 		CancelUser: string(entity.CancelByStore),
 	}
 
@@ -95,21 +95,21 @@ func TestRefundProcessForPaymentCanceledByStore(t *testing.T) {
 	repo := &payment.PaymentRepositoryMock{
 		FindFunc: func(id string) (*entity.Payment, error) {
 			return &entity.Payment{
-				ID: "1",
+				ID:      "1",
 				OrderID: "1",
-				Amount: 100,
-				Method: entity.MethodCredit,
-				Status: entity.PaymentApproved,
+				Amount:  100,
+				Method:  entity.MethodCredit,
+				Status:  entity.PaymentApproved,
 			}, nil
 		},
 	}
 	uc := payment.NewUseCase(repo)
 	input := payment.RefundPaymentInput{
-		PaymentID: "1",
+		PaymentID:  "1",
 		CancelUser: string(entity.CancelByStore),
 	}
 
- 	response, _ := uc.RefundPayment(ctx, input)
+	response, _ := uc.RefundPayment(ctx, input)
 	expectedRefund := 100.0
 
 	if response.RefundedAmount != expectedRefund {
@@ -123,21 +123,21 @@ func TestRefundProcessForPaymentCanceledByUser(t *testing.T) {
 	repo := &payment.PaymentRepositoryMock{
 		FindFunc: func(id string) (*entity.Payment, error) {
 			return &entity.Payment{
-				ID: "1",
+				ID:      "1",
 				OrderID: "1",
-				Amount: 100,
-				Method: entity.MethodCredit,
-				Status: entity.PaymentApproved,
+				Amount:  100,
+				Method:  entity.MethodCredit,
+				Status:  entity.PaymentApproved,
 			}, nil
 		},
 	}
 	uc := payment.NewUseCase(repo)
 	input := payment.RefundPaymentInput{
-		PaymentID: "1",
+		PaymentID:  "1",
 		CancelUser: string(entity.CancelByUser),
 	}
 
- 	response, _ := uc.RefundPayment(ctx, input)
+	response, _ := uc.RefundPayment(ctx, input)
 	expectedRefund := 100 * 0.7
 
 	if response.RefundedAmount != expectedRefund {
