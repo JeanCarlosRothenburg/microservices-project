@@ -1,6 +1,7 @@
 import asyncio
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
+from fastapi.security import HTTPBearer
 from app.controller.estoque_controller import router
 from app.infrastructure.database.database import engine, Base, SessionLocal
 import app.infrastructure.database.produto_model
@@ -34,8 +35,8 @@ async def lifespan(app: FastAPI):
     db.close()
     await rabbitmq.close()
 
-
-app = FastAPI(title="Estoque Service", version="1.0.0", lifespan=lifespan)
+security = HTTPBearer()
+app = FastAPI(title="Estoque Service", version="1.0.0", lifespan=lifespan, root_path="/estoque", dependencies=[Depends(security)])
 
 app.include_router(router)
 
