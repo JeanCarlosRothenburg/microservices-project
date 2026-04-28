@@ -6,7 +6,7 @@ CREATE TYPE payment_status AS ENUM (
 );
 
 CREATE TYPE payment_method AS ENUM (
-  'DEBITO',
-  'CREDITO',
+  'CARTA_DEBITO',
+  'CARTAO_CREDITO',
   'PIX'
 );

@@ -5,19 +5,19 @@ import (
 	"encoding/json"
 	"log"
 
+	"github.com/JeanCarlosRothenburg/payment-service/internal/usecase/payment"
 	amqp "github.com/rabbitmq/amqp091-go"
-	"github.com/JeanCarlosRothenburg/payment-service/internal/usecase/payment"	
 )
 
 type Consumer struct {
-	channel *amqp.Channel
+	channel   *amqp.Channel
 	paymentUC payment.UseCase
 	publisher *Publisher
 }
 
 func NewConsumer(ch *amqp.Channel, uc payment.UseCase) *Consumer {
 	return &Consumer{
-		channel: ch,
+		channel:   ch,
 		paymentUC: uc,
 		publisher: NewPublisher(ch),
 	}
@@ -51,13 +51,15 @@ func (c *Consumer) handle(msg amqp.Delivery) {
 	}
 
 	output, err := c.paymentUC.ProcessPayment(context.Background(), input)
+
 	if err != nil {
 		log.Printf("Erro ao processar pagamento: %v", err)
-		msg.Nack(false, true)
+		c.publisher.Publish("payment.failed", output)
+		msg.Nack(false, false)
 		return
 	}
 
-	err = c.publisher.Publish(output.Status, output)
+	err = c.publisher.Publish("payment.approved", output)
 	if err != nil {
 		log.Printf("Erro ao publicar o resultado do pagamento do pedido %v: %v", input.OrderID, err)
 		msg.Nack(false, true)

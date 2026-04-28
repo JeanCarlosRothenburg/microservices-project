@@ -1,9 +1,9 @@
 package payment_test
 
 import (
-	"testing"
-	"errors"
 	"context"
+	"errors"
+	"testing"
 
 	"github.com/JeanCarlosRothenburg/payment-service/internal/domain/entity"
 	"github.com/JeanCarlosRothenburg/payment-service/internal/usecase/payment"
@@ -13,15 +13,15 @@ import (
 func TestValidProcessPayment(t *testing.T) {
 	ctx := context.Background()
 	repo := &payment.PaymentRepositoryMock{
-		SaveFunc: func(p entity.Payment) error {
-			return nil
+		SaveFunc: func(p entity.Payment) (entity.Payment, error) {
+			return p, nil
 		},
 	}
 	uc := payment.NewUseCase(repo)
 	input := payment.ProcessPaymentInput{
 		OrderID: "1",
-		Amount: 100,
-		Method: string(entity.MethodDebit),
+		Amount:  100,
+		Method:  string(entity.MethodDebit),
 	}
 
 	_, err := uc.ProcessPayment(ctx, input)
@@ -37,8 +37,8 @@ func TestInvalidProcessPayment(t *testing.T) {
 	uc := payment.NewUseCase(&payment.PaymentRepositoryMock{})
 	input := payment.ProcessPaymentInput{
 		OrderID: "1",
-		Amount: 0,
-		Method: string(entity.MethodDebit),
+		Amount:  0,
+		Method:  string(entity.MethodDebit),
 	}
 
 	_, err := uc.ProcessPayment(ctx, input)
@@ -52,15 +52,15 @@ func TestInvalidProcessPayment(t *testing.T) {
 func TestValidProcessPaymentWithErrorOnSave(t *testing.T) {
 	ctx := context.Background()
 	repo := &payment.PaymentRepositoryMock{
-		SaveFunc: func(p entity.Payment) error {
-			return errors.New("Teste de erro no salvamento")
+		SaveFunc: func(p entity.Payment) (entity.Payment, error) {
+			return p, errors.New("Teste de erro no salvamento")
 		},
 	}
 	uc := payment.NewUseCase(repo)
 	input := payment.ProcessPaymentInput{
 		OrderID: "1",
-		Amount: 100,
-		Method: string(entity.MethodDebit),
+		Amount:  100,
+		Method:  string(entity.MethodDebit),
 	}
 
 	_, err := uc.ProcessPayment(ctx, input)

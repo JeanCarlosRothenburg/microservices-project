@@ -10,7 +10,6 @@ func (u *usecase) RefundPayment(
 	ctx context.Context,
 	input RefundPaymentInput,
 ) (RefundPaymentOutput, error) {
-
 	p, err := u.repo.FindByID(ctx, input.PaymentID)
 
 	if err != nil {
@@ -20,17 +19,30 @@ func (u *usecase) RefundPayment(
 	refundedAmount, err := p.Refund(entity.CancelUser(input.CancelUser))
 
 	if err != nil {
-		return RefundPaymentOutput{}, err
+		return RefundPaymentOutput{
+			PaymentID:      p.ID,
+			OrderID:        p.ID,
+			RefundedAmount: refundedAmount,
+			Status:         string(p.Status),
+		}, err
 	}
 
-	err = u.repo.Save(ctx, *p)
+	savedP, err := u.repo.Save(ctx, *p)
+	p = &savedP
 
 	if err != nil {
-		return RefundPaymentOutput{}, err
+		return RefundPaymentOutput{
+			PaymentID:      p.ID,
+			OrderID:        p.OrderID,
+			RefundedAmount: refundedAmount,
+			Status:         string(p.Status),
+		}, err
 	}
 
 	return RefundPaymentOutput{
+		PaymentID:      p.ID,
+		OrderID:        p.OrderID,
 		RefundedAmount: refundedAmount,
-		Status: string(p.Status),
+		Status:         string(p.Status),
 	}, nil
 }
