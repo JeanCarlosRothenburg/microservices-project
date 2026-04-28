@@ -19,7 +19,8 @@ services:
       - public_key
     environment:
       PUBLIC_KEY_PATH: /run/secrets/public_key
-      RABBITMQ_URL: amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672/
+      RABBITMQ_URL: ${RABBITMQ_URL}
+      POSTGRES_DB_URL: ${POSTGRES_DB_URL}
     depends_on:
       - rabbitmq
       - payment-postgres
@@ -28,15 +29,13 @@ services:
     image: postgres:18.3-alpine
     container_name: payment-db
     restart: always
-    secrets:
-      - postgres_user
-      - postgres_password
     environment:
-      POSTGRES_USER_FILE: /run/secrets/postgres_user
-      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
-      POSTGRES_DB: payments
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     volumes:
       - payment_postgres_data:/var/lib/postgresql
+      - ./services/payment-service/internal/infrastructure/database/migrations:/docker-entrypoint-initdb.d
 
   # FIM - Microsserviço de pagamento
 
@@ -88,7 +87,7 @@ services:
     environment:
       PUBLIC_KEY_PATH: /run/secrets/public_key
       DATABASE_URL: postgresql://postgres:postgres@estoque-db:5432/estoque
-      RABBITMQ_URL: amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672/ 
+      RABBITMQ_URL: amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672/
     depends_on:
       estoque-db:
         condition: service_healthy
@@ -150,7 +149,3 @@ secrets:
     file: ./keys/private_key.pem
   public_key:
     file: ./keys/public_key.pem
-  postgres_user:
-    file: ./keys/postgres_user.txt
-  postgres_password:
-    file: ./keys/postgres_password.txt
