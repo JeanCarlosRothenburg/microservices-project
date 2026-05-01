@@ -32,7 +32,7 @@ class Consumer:
             body = self._parse(msg)
             if not body:
                 return
-            pedido_id = body.get("order_id")
+            pedido_id = body.get("OrderID") or body.get("order_id")
             logger.info(f"Estoque reservado para pedido {pedido_id}, aguardando pagamento...")
 
     async def _handle_stock_failed(self, msg: IncomingMessage):
@@ -40,7 +40,7 @@ class Consumer:
             body = self._parse(msg)
             if not body:
                 return
-            pedido_id = body.get("order_id")
+            pedido_id = body.get("OrderID") or body.get("order_id")
             logger.warning(f"Reserva de estoque falhou para pedido {pedido_id}, cancelando...")
             self._atualizar_status(pedido_id, StatusPedido.CANCELADO)
 
@@ -49,7 +49,7 @@ class Consumer:
             body = self._parse(msg)
             if not body:
                 return
-            pedido_id = body.get("order_id")
+            pedido_id = body.get("OrderID") or body.get("order_id")
             logger.info(f"Pagamento aprovado para pedido {pedido_id}, aprovando...")
             self._atualizar_status(pedido_id, StatusPedido.APROVADO)
 
@@ -58,7 +58,7 @@ class Consumer:
             body = self._parse(msg)
             if not body:
                 return
-            pedido_id = body.get("order_id")
+            pedido_id = body.get("OrderID") or body.get("order_id")
             logger.warning(f"Pagamento falhou para pedido {pedido_id}, cancelando...")
             self._atualizar_status(pedido_id, StatusPedido.CANCELADO)
 
