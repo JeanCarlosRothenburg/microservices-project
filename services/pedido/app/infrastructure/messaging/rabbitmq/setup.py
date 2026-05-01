@@ -24,11 +24,10 @@ async def setup(channel: Channel):
     )
     await order_queue.bind(order_exchange)
 
-    result_queues = [
-        "stock.reserved",
-        "stock.reserve.failed",
-        "payment.approved",
-        "payment.failed",
-    ]
-    for queue_name in result_queues:
-        await channel.declare_queue(queue_name, durable=True)
+    # Filas que o pedido-service consome (resultados dos outros microsserviços)
+    for queue_name in ["stock.reserved", "stock.reserve.failed", "payment.approved", "payment.failed"]:
+        await channel.declare_queue(
+            queue_name,
+            durable=True,
+            arguments={"x-dead-letter-exchange": "dlx.exchange"},
+        )
