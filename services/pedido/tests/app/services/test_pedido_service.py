@@ -1,7 +1,7 @@
 from unittest.mock import patch
 import pytest
 
-from app.domain.pedido import StatusPedido
+from app.domain.pedido import MetodoPagamento, StatusPedido
 from app.repositories.pedido_repository_memory import PedidoRepositoryMemory
 from app.services.pedido_service import PedidoService
 from tests.app.stubs.pedido_stub import (
@@ -34,10 +34,11 @@ def test_criar_pedido_aprovado(service):
         mock_estoque.verificar_disponibilidade.return_value = True
         mock_payment.processar_pagamento.return_value = True
 
-        pedido = service.criar_pedido(USUARIO, get_itens_stub())
+        pedido = service.criar_pedido(USUARIO, get_itens_stub(), MetodoPagamento.PIX)
 
         assert pedido.status == StatusPedido.APROVADO
         assert pedido.usuario_email == USUARIO
+
 
 def test_criar_pedido_pagamento_falha_cancela(service):
     with patch.dict("os.environ", {"AUTO_APPROVE": "true"}), \
@@ -46,14 +47,14 @@ def test_criar_pedido_pagamento_falha_cancela(service):
         mock_estoque.verificar_disponibilidade.return_value = True
         mock_payment.processar_pagamento.return_value = False
 
-        pedido = service.criar_pedido(USUARIO, get_itens_stub())
+        pedido = service.criar_pedido(USUARIO, get_itens_stub(), MetodoPagamento.PIX)
 
         assert pedido.status == StatusPedido.CANCELADO
 
 
 def test_criar_pedido_sem_itens_levanta_erro(service):
     with pytest.raises(ValueError, match="ao menos 1 item"):
-        service.criar_pedido(USUARIO, [])
+        service.criar_pedido(USUARIO, [], MetodoPagamento.PIX)
 
 
 def test_criar_pedido_sem_estoque_levanta_erro(service):
@@ -61,7 +62,7 @@ def test_criar_pedido_sem_estoque_levanta_erro(service):
         mock_estoque.verificar_disponibilidade.return_value = False
 
         with pytest.raises(ValueError, match="sem estoque"):
-            service.criar_pedido(USUARIO, get_itens_stub())
+            service.criar_pedido(USUARIO, get_itens_stub(), MetodoPagamento.PIX)
 
 
 def test_criar_pedido_multiplos_itens(service):
@@ -71,7 +72,7 @@ def test_criar_pedido_multiplos_itens(service):
         mock_estoque.verificar_disponibilidade.return_value = True
         mock_payment.processar_pagamento.return_value = True
 
-        pedido = service.criar_pedido(USUARIO, itens)
+        pedido = service.criar_pedido(USUARIO, itens, MetodoPagamento.PIX)
 
         assert len(pedido.itens) == 2
 
@@ -215,7 +216,7 @@ def test_criar_pedido_estoque_lancando_excecao(service):
         mock_estoque.verificar_disponibilidade.side_effect = Exception()
 
         with pytest.raises(Exception):
-            service.criar_pedido(USUARIO, get_itens_stub())
+            service.criar_pedido(USUARIO, get_itens_stub(), MetodoPagamento.PIX)
 
 
 def test_criar_pedido_pagamento_lancando_excecao(service):
@@ -225,9 +226,11 @@ def test_criar_pedido_pagamento_lancando_excecao(service):
         mock_estoque.verificar_disponibilidade.return_value = True
         mock_payment.processar_pagamento.side_effect = Exception()
 
-        pedido = service.criar_pedido(USUARIO, get_itens_stub())
+        pedido = service.criar_pedido(USUARIO, get_itens_stub(), MetodoPagamento.PIX)
 
         assert pedido.status == StatusPedido.CANCELADO
+
+
 # =========================
 # RF-05
 # =========================
@@ -241,11 +244,7 @@ def test_alterar_pedido_pendente(service):
     with patch(ESTOQUE_PATCH) as mock_estoque:
         mock_estoque.verificar_disponibilidade.return_value = True
 
-        resultado = service.alterar_pedido(
-            pedido.id,
-            USUARIO,
-            novos_itens
-        )
+        resultado = service.alterar_pedido(pedido.id, USUARIO, novos_itens)
 
     assert resultado.itens[0].produto_sku == novos_itens[0]["produto_sku"]
 
@@ -274,11 +273,7 @@ def test_alterar_pedido_sem_estoque(service):
         mock_estoque.verificar_disponibilidade.return_value = False
 
         with pytest.raises(ValueError):
-            service.alterar_pedido(
-                pedido.id,
-                USUARIO,
-                get_itens_stub()
-            )
+            service.alterar_pedido(pedido.id, USUARIO, get_itens_stub())
 
 
 def test_alterar_pedido_outro_usuario(service):
@@ -286,11 +281,8 @@ def test_alterar_pedido_outro_usuario(service):
     service.repository.save(pedido)
 
     with pytest.raises(ValueError):
-        service.alterar_pedido(
-            pedido.id,
-            OUTRO_USUARIO,
-            get_itens_stub()
-        )
+        service.alterar_pedido(pedido.id, OUTRO_USUARIO, get_itens_stub())
+
 
 # =========================
 # RF-06
