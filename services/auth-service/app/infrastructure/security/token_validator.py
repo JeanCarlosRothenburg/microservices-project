@@ -8,7 +8,7 @@ JWT_SECRET = os.getenv("JWT_SECRET")
 
 def validate_token(token: str) -> dict:
     try:
-        return jwt.decode(token, JWT_SECRET, algorithms="HS256")
+        return jwt.decode(token, JWT_SECRET, algorithms=["HS256"])
     except ExpiredSignatureError:
         raise ValueError("Token expirado")
     except InvalidTokenError:
