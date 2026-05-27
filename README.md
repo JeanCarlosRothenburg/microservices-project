@@ -129,3 +129,4 @@ Microsserviço responsável por processar pagamentos.
 |     RN-06     | Para cancelamento efetuados pela loja o reembolso será correspondente ao valor total do pedido |
 # debug docker login
 # debug docker login
+# debug docker login
