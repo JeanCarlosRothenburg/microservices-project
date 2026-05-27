@@ -31,13 +31,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Debug Docker login
-        env:
-          AUTH_SERVICE_DOCKER_USERNAME: ${{ secrets.AUTH_SERVICE_DOCKER_USERNAME }}
-          AUTH_SERVICE_DOCKER_PASSWORD: ${{ secrets.AUTH_SERVICE_DOCKER_PASSWORD }}
+      - name: Docker login manual
         run: |
-          echo "USER=${{ secrets.AUTH_SERVICE_DOCKER_USERNAME }}"
-          echo "PASS length=${#AUTH_SERVICE_DOCKER_PASSWORD}"
+          echo "${{ secrets.AUTH_SERVICE_DOCKER_PASSWORD }}" | docker login -u jeanrothenburg --password-stdin
 
       - name: Setup python
         uses: actions/setup-python@v5
