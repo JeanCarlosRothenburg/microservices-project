@@ -22,7 +22,7 @@ Foram aplicados dois padrões de arquitetura de microsserviços para a aplicaç�
 
 **Objetivos**
 
-- Publicação de eventos em um _message broker_
+- Publicação de eventos em um message broker_
 - Gerenciar transações que envolvem múltiplos microsserviços
 - Garantir a consistência dos dados caso ocorram falhas
 
@@ -30,7 +30,7 @@ Foram aplicados dois padrões de arquitetura de microsserviços para a aplicaç�
 
 # Comunicação
 
-A comunicação entre os microsserviços será estabelecida obedecendo a arquitetura REST, através de requisições seguindo o protocolo HTTP.
+A comunicação entre os microsserviços será estabelecida através de mensageria, utilizando a ferramenta RabbitMQ como **message broker** da aplicação.
 
 # Microsserviços
 
@@ -42,7 +42,7 @@ Microsserviço responsável pela autenticação do usuário e geração do token
 
 **Arquitetura:** Camadas
 **Linguagem:** Python
-**Bibliotecas:** [bcrypt](https://pypi.org/project/bcrypt/), [PyJWT](https://pypi.org/project/PyJWT/) e [email-validator](https://pypi.org/project/email-validator/)
+**Bibliotecas:** [PyJWT](https://pypi.org/project/PyJWT/) e [email-validator](https://pypi.org/project/email-validator/)
 
 ## Estoque
 
@@ -105,8 +105,10 @@ Microsserviço responsável por processar pedidos, coordenando a verificação d
 Microsserviço responsável por processar pagamentos.
 
 **Arquitetura:** Clean Architecture
+**Tipo**: Event Driven
 **Linguagem:** Golang
-**Cobertura de testes:** 100%
+**Cobertura de testes:** 100% da lógica de negócio
+**Bibliotecas**: 
 
 **Requisitos funcionais**
 
