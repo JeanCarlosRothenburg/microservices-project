@@ -23,6 +23,10 @@ jobs:
       run:
         working-directory: services/auth-service
 
+    env:
+      PYTHONPATH: .
+      JWT_SECRET: 7f3c9a2d5e8b4c1f6a9d2e7c0b3f8a5d9e2c6b1f4a7d0e3c9b6f2a8d5e1c7b3
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
