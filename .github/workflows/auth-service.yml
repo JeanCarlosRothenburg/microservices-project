@@ -63,7 +63,7 @@ jobs:
         if: github.ref == 'refs/heads/main'
         run: |
           docker tag auth-service ${{ secrets.AUTH_SERVICE_DOCKER_USERNAME }}/auth-service:latest
-          docker push ${{ secrets.AUTH_SERVICE>DOCKER_USERNAME }}/auth-service:latest
+          docker push ${{ secrets.AUTH_SERVICE_DOCKER_USERNAME }}/auth-service:latest
 
       - name: Deploy (DEV)
         if: github.ref == 'refs/heads/develop'
