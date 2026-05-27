@@ -1,0 +1,74 @@
+name: CI/CD Pipeline
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - feature/**
+    paths:
+      - "services/auth-service/**"
+
+  pull_request:
+    branches:
+      - main
+      - develop
+    paths:
+      - "/services/auth-service/**"
+
+jobs:
+  auth-service:
+    runs-on: ubuntu-26.04
+
+    defaults:
+      run:
+        working-directory: services/auth-service
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13.5"
+
+      - name: Install dependencies
+        run: pip install -r requirements-dev.txt -r requirements.txt
+
+      - name: Run tests with coverage
+        run: pytest --cov=app --cov-report=xml
+
+      - name: SonarQube scan
+        uses: SonarSource/sonarqube-scan-action@v5
+        env:
+          SONAR_TOKEN: ${{ secrets.AUTH_SERVICE_SONAR_KEY }}
+
+      - name: Docker Image build
+        run: docker build -t auth-service .
+
+      - name: Docker Hub authentication
+        if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main'
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.AUTH_SERVICE_DOCKER_USERNAME }}
+          password: ${{ secrets.AUTH_SERVICE_DOCKER_PASSWORD }}
+
+      - name: Docker Image push (DEV)
+        if: github.ref == 'refs/heads/develop'
+        run: |
+          docker tag auth-service ${{ secrets.AUTH_SERVICE_DOCKER_USERNAME }}/auth-service:dev
+          docker push ${{ secrets.AUTH_SERVICE_DOCKER_USERNAME}}/auth-service:dev
+
+      - name: Docker Image push (HOMOL)
+        if: github.ref == 'refs/heads/main'
+        run: |
+          docker tag auth-service ${{ secrets.AUTH_SERVICE_DOCKER_USERNAME }}/auth-service:latest
+          docker push ${{ secrets.AUTH_SERVICE>DOCKER_USERNAME }}/auth-service:latest
+
+      - name: Deploy (DEV)
+        if: github.ref == 'refs/heads/develop'
+        run: curl ${{ secrets.AUTH_SERVICE_RENDER_DEPLOY_HOOK_DEV }}
+
+      - name: Deploy (HOMOL)
+        if: github.ref == 'refs/heads/main'
+        run: curl ${{ secrets.AUTH_SERVICE_RENDER_DEPLOY_HOOK_HOMOL }}

@@ -7,6 +7,10 @@ DATABASE_URL = os.getenv(
     "postgresql://postgres:postgres@localhost:5433/estoque"
 )
 
+# Corrige o prefixo do Render que usa postgres:// em vez de postgresql://
+if DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+
 engine = create_engine(DATABASE_URL)
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
