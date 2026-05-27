@@ -17,11 +17,14 @@ on:
 
 jobs:
   auth-service:
-    runs-on: ubuntu-26.04
+    runs-on: ubuntu-24.04
 
     defaults:
       run:
         working-directory: services/auth-service
+
+    env:
+      PYTHONPATH: .
 
     steps:
       - name: Checkout code
