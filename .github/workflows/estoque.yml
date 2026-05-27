@@ -25,6 +25,9 @@ jobs:
       run:
         working-directory: services/estoque
 
+    env:
+      PYTHONPATH: .
+
     steps:
       - name: Checkout do código
         uses: actions/checkout@v4
