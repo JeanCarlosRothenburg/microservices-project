@@ -43,7 +43,7 @@ jobs:
         run: pytest --cov=app --cov-report=xml
 
       - name: SonarQube scan
-        uses: SonarSource/sonarqube-scan-action@v5
+        uses: SonarSource/sonarqube-scan-action@v6
         with:
           projectBaseDir: services/auth-service
         env:
