@@ -23,6 +23,9 @@ jobs:
       run:
         working-directory: services/auth-service
 
+    env:
+      PYTHONPATH: .
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
