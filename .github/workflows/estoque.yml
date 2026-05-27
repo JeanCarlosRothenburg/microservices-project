@@ -1,0 +1,116 @@
+name: Estoque Service — CI/CD
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - "services/estoque/**"
+      - ".github/workflows/estoque.yml"
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - "services/estoque/**"
+
+env:
+  IMAGE_NAME: estoque-service
+
+jobs:
+  # ─────────────────────────────────────────
+  # CI: Build + Testes + Análise
+  # ─────────────────────────────────────────
+  ci:
+    name: Build & Test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/estoque
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Configurar Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+          cache-dependency-path: services/estoque/requirements*.txt
+
+      - name: Instalar dependências
+        run: pip install -r requirements.txt -r requirements-dev.txt
+
+      - name: Rodar testes com cobertura
+        run: pytest --cov=app --cov-report=xml --cov-report=term-missing
+
+      - name: Análise SonarCloud
+        uses: SonarSource/sonarcloud-github-action@master
+        with:
+          projectBaseDir: services/estoque
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN_ESTOQUE }}
+
+  # ─────────────────────────────────────────
+  # Build e publicação da imagem Docker
+  # ─────────────────────────────────────────
+  docker:
+    name: Docker Build & Push
+    runs-on: ubuntu-latest
+    needs: ci
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Login no Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Definir tag da imagem
+        id: tag
+        run: |
+          BRANCH=${GITHUB_REF_NAME}
+          SHA=${GITHUB_SHA::7}
+          if [ "$BRANCH" = "main" ]; then
+            echo "tag=${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:homol-${SHA}" >> $GITHUB_OUTPUT
+            echo "env=homol" >> $GITHUB_OUTPUT
+          else
+            echo "tag=${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:dev-${SHA}" >> $GITHUB_OUTPUT
+            echo "env=dev" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Build e push da imagem
+        uses: docker/build-push-action@v5
+        with:
+          context: services/estoque
+          push: true
+          tags: ${{ steps.tag.outputs.tag }}
+
+  # ─────────────────────────────────────────
+  # CD: Deploy no Render
+  # ─────────────────────────────────────────
+  deploy-dev:
+    name: Deploy DEV (develop)
+    runs-on: ubuntu-latest
+    needs: docker
+    if: github.ref == 'refs/heads/develop'
+
+    steps:
+      - name: Trigger deploy no Render (DEV)
+        run: |
+          curl -s -X POST "${{ secrets.RENDER_DEPLOY_HOOK_ESTOQUE_DEV }}"
+          echo "Deploy DEV disparado com sucesso"
+
+  deploy-homol:
+    name: Deploy HOMOL (main)
+    runs-on: ubuntu-latest
+    needs: docker
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Trigger deploy no Render (HOMOL)
+        run: |
+          curl -s -X POST "${{ secrets.RENDER_DEPLOY_HOOK_ESTOQUE_HOMOL }}"
+          echo "Deploy HOMOL disparado com sucesso"

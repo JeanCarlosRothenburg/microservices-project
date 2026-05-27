@@ -1,0 +1,703 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>worker: Go Coverage Report</title>
+		<style>
+			body {
+				background: black;
+				color: rgb(80, 80, 80);
+			}
+			body, pre, #legend span {
+				font-family: Menlo, monospace;
+				font-weight: bold;
+			}
+			#topbar {
+				background: black;
+				position: fixed;
+				top: 0; left: 0; right: 0;
+				height: 42px;
+				border-bottom: 1px solid rgb(80, 80, 80);
+			}
+			#content {
+				margin-top: 50px;
+			}
+			#nav, #legend {
+				float: left;
+				margin-left: 10px;
+			}
+			#legend {
+				margin-top: 12px;
+			}
+			#nav {
+				margin-top: 10px;
+			}
+			#legend span {
+				margin: 0 5px;
+			}
+			.cov0 { color: rgb(192, 0, 0) }
+.cov1 { color: rgb(128, 128, 128) }
+.cov2 { color: rgb(116, 140, 131) }
+.cov3 { color: rgb(104, 152, 134) }
+.cov4 { color: rgb(92, 164, 137) }
+.cov5 { color: rgb(80, 176, 140) }
+.cov6 { color: rgb(68, 188, 143) }
+.cov7 { color: rgb(56, 200, 146) }
+.cov8 { color: rgb(44, 212, 149) }
+.cov9 { color: rgb(32, 224, 152) }
+.cov10 { color: rgb(20, 236, 155) }
+
+		</style>
+	</head>
+	<body>
+		<div id="topbar">
+			<div id="nav">
+				<select id="files">
+				
+				<option value="file0">github.com/JeanCarlosRothenburg/payment-service/cmd/worker/main.go (0.0%)</option>
+				
+				<option value="file1">github.com/JeanCarlosRothenburg/payment-service/internal/domain/entity/payment.go (100.0%)</option>
+				
+				<option value="file2">github.com/JeanCarlosRothenburg/payment-service/internal/infrastructure/database/connection.go (0.0%)</option>
+				
+				<option value="file3">github.com/JeanCarlosRothenburg/payment-service/internal/infrastructure/messaging/rabbitmq/connection.go (0.0%)</option>
+				
+				<option value="file4">github.com/JeanCarlosRothenburg/payment-service/internal/infrastructure/messaging/rabbitmq/consumer.go (0.0%)</option>
+				
+				<option value="file5">github.com/JeanCarlosRothenburg/payment-service/internal/infrastructure/messaging/rabbitmq/publisher.go (0.0%)</option>
+				
+				<option value="file6">github.com/JeanCarlosRothenburg/payment-service/internal/infrastructure/messaging/rabbitmq/setup.go (0.0%)</option>
+				
+				<option value="file7">github.com/JeanCarlosRothenburg/payment-service/internal/infrastructure/repository/payment_repository_pg.go (0.0%)</option>
+				
+				<option value="file8">github.com/JeanCarlosRothenburg/payment-service/internal/usecase/payment/process_payment.go (100.0%)</option>
+				
+				<option value="file9">github.com/JeanCarlosRothenburg/payment-service/internal/usecase/payment/refund_payment.go (100.0%)</option>
+				
+				<option value="file10">github.com/JeanCarlosRothenburg/payment-service/internal/usecase/payment/repository_mock.go (83.3%)</option>
+				
+				<option value="file11">github.com/JeanCarlosRothenburg/payment-service/internal/usecase/payment/usecase.go (100.0%)</option>
+				
+				</select>
+			</div>
+			<div id="legend">
+				<span>not tracked</span>
+			
+				<span class="cov0">not covered</span>
+				<span class="cov8">covered</span>
+			
+			</div>
+		</div>
+		<div id="content">
+		
+		<pre class="file" id="file0" style="display: none">package main
+
+import (
+        "database/sql"
+        "log"
+        "os"
+
+        "github.com/JeanCarlosRothenburg/payment-service/internal/infrastructure/messaging/rabbitmq"
+        "github.com/JeanCarlosRothenburg/payment-service/internal/infrastructure/repository"
+        "github.com/JeanCarlosRothenburg/payment-service/internal/usecase/payment"
+        _ "github.com/lib/pq"
+)
+
+func main() <span class="cov0" title="0">{
+        conn := rabbitmq.NewConnection()
+        defer conn.Close()
+
+        db, err := sql.Open("postgres", os.Getenv("POSTGRES_DB_URL"))
+        if err != nil </span><span class="cov0" title="0">{
+                log.Fatalf("Falha ao estabelecer conexão com o DB: %v", err)
+        }</span>
+        <span class="cov0" title="0">defer db.Close()
+
+        repo := repository.NewPaymentRepository(db)
+        uc := payment.NewUseCase(repo)
+
+        rabbitmq.NewConsumer(conn.Channel(), uc).Start()</span>
+}
+</pre>
+		
+		<pre class="file" id="file1" style="display: none">package entity
+
+import "errors"
+
+type PaymentStatus string
+type PaymentMethod string
+type CancelUser string
+
+const (
+        // Status do pedido
+        PaymentPending  PaymentStatus = "PENDENTE"
+        PaymentApproved PaymentStatus = "APROVADO"
+        PaymentRefunded PaymentStatus = "REEMBOLSADO"
+        PaymentFailed   PaymentStatus = "RECUSADO"
+
+        // Métodos de pagamento
+        MethodDebit  PaymentMethod = "CARTAO_DEBITO"
+        MethodCredit PaymentMethod = "CARTAO_CREDITO"
+        MethodPix    PaymentMethod = "PIX"
+
+        // Usuário de cancelamento
+        CancelByUser  CancelUser = "USUARIO"
+        CancelByStore CancelUser = "LOJA"
+)
+
+var (
+        ErrRefundInvalidStatus  = errors.New("Somente pagamentos aprovados podem ser reembolsados")
+        ErrRefundInvalidUser    = errors.New("Usuário de cancelamento inválido")
+        ErrPaymentInvalidStatus = errors.New("O pagamento não está pendente")
+        ErrPaymentInvalidValue  = errors.New("O valor é inválido para o pagamento")
+)
+
+// Modelo de dados do pagamento
+type Payment struct {
+        ID      string
+        OrderID string
+        Amount  float64
+        Method  PaymentMethod
+        Status  PaymentStatus
+}
+
+// Método para reembolsar o pagamento
+func (p *Payment) Refund(user CancelUser) (float64, error) <span class="cov8" title="1">{
+        if !PaymentIsApproved(p.Status) </span><span class="cov8" title="1">{
+                return 0, ErrRefundInvalidStatus
+        }</span>
+
+        <span class="cov8" title="1">refundPercent, err := GetRefundPercent(user)
+
+        if err != nil </span><span class="cov8" title="1">{
+                return 0, err
+        }</span>
+
+        <span class="cov8" title="1">var refundAmount = p.Amount * refundPercent
+
+        p.Status = PaymentRefunded
+        // Futuramente: dispara evento para o RabbitMQ
+        return refundAmount, nil</span>
+}
+
+// Método para processar do pagamento
+func (p *Payment) Process() error <span class="cov8" title="1">{
+        if !PaymentIsPending(p.Status) </span><span class="cov8" title="1">{
+                return ErrPaymentInvalidStatus
+        }</span>
+
+        <span class="cov8" title="1">if !PaymentValueIsMoreThanZero(p.Amount) </span><span class="cov8" title="1">{
+                return ErrPaymentInvalidValue
+        }</span>
+
+        <span class="cov8" title="1">p.Status = PaymentApproved
+        // Futuramente: dispara evento para o RabbitMQ
+        return nil</span>
+}
+
+// Função para verificar se o status do pagamento é APROVADO
+func PaymentIsApproved(status PaymentStatus) bool <span class="cov8" title="1">{
+        return status == PaymentApproved
+}</span>
+
+// Função para verificar se o status do pagamento é PENDENTE
+func PaymentIsPending(status PaymentStatus) bool <span class="cov8" title="1">{
+        return status == PaymentPending
+}</span>
+
+// Função para verificar se o valor do pagamento é maior que R$00,00
+func PaymentValueIsMoreThanZero(amount float64) bool <span class="cov8" title="1">{
+        return amount &gt; 0
+}</span>
+
+// Função para obter o percentual do valor total que será reembolsado
+func GetRefundPercent(user CancelUser) (float64, error) <span class="cov8" title="1">{
+        switch user </span>{
+        case CancelByUser:<span class="cov8" title="1">
+                return 0.7, nil</span>
+        case CancelByStore:<span class="cov8" title="1">
+                return 1, nil</span>
+        default:<span class="cov8" title="1">
+                return 0, ErrRefundInvalidUser</span>
+        }
+
+}
+</pre>
+		
+		<pre class="file" id="file2" style="display: none">package database
+
+import (
+        "database/sql"
+        _ "github.com/lib/pq"
+)
+
+func NewConnection(dsn string) (*sql.DB, error) <span class="cov0" title="0">{
+        return sql.Open("postgres", dsn)
+}</pre>
+		
+		<pre class="file" id="file3" style="display: none">package rabbitmq
+
+import (
+        "log"
+        "os"
+
+        amqp "github.com/rabbitmq/amqp091-go"
+)
+
+type Connection struct {
+        conn *amqp.Connection
+        channel *amqp.Channel
+        url string
+}
+
+func NewConnection() *Connection <span class="cov0" title="0">{
+        url, exists := os.LookupEnv("RABBITMQ_URL")
+
+        if !exists </span><span class="cov0" title="0">{
+                log.Fatal("A constante da URL do RabbitMQ URL não foi encontrada!")
+        }</span>
+
+        <span class="cov0" title="0">c := &amp;Connection{url: url}
+        c.connect()
+        return c</span>
+
+}
+
+func (c *Connection) connect() <span class="cov0" title="0">{
+        conn, err := amqp.Dial(c.url)
+        if err != nil </span><span class="cov0" title="0">{
+                log.Fatal("Não foi possível estabelecer a conexão com o RabbitMQ")
+        }</span>
+
+        <span class="cov0" title="0">channel, err := conn.Channel()
+        if err != nil </span><span class="cov0" title="0">{
+                conn.Close()
+                log.Fatal("Não foi possível abrir uma canal no RabbitMQ")
+        }</span>
+
+        <span class="cov0" title="0">c.conn = conn
+        c.channel = channel
+
+        err = setup(channel)
+        if err != nil </span><span class="cov0" title="0">{
+                log.Fatal("Erro ao configurar topologia do RabbitMQ")
+        }</span>
+}
+
+func (c *Connection) Channel() *amqp.Channel <span class="cov0" title="0">{
+        if c.channel == nil || c.channel.IsClosed() </span><span class="cov0" title="0">{
+                channel, err := c.conn.Channel()
+                if err != nil </span><span class="cov0" title="0">{
+                        log.Println("Erro ao abrir canal no RabbitMQ!")
+                        c.connect()
+                        return c.channel
+                }</span>
+                <span class="cov0" title="0">log.Println("Canal aberto no RabbitMQ!")
+                c.channel = channel</span>
+
+        }
+
+        <span class="cov0" title="0">log.Println("Já existe um canal aberto no RabbitMQ!")
+        return c.channel</span>
+}
+
+func (c *Connection) Close() <span class="cov0" title="0">{
+        if c.channel != nil &amp;&amp; !c.channel.IsClosed() </span><span class="cov0" title="0">{
+                c.channel.Close()
+        }</span>
+        <span class="cov0" title="0">if c.conn != nil &amp;&amp; !c.conn.IsClosed() </span><span class="cov0" title="0">{
+                c.conn.Close()
+        }</span>
+        <span class="cov0" title="0">log.Println("Conexão com o RabbitMQ encerrada!")</span>
+}</pre>
+		
+		<pre class="file" id="file4" style="display: none">package rabbitmq
+
+import (
+        "context"
+        "encoding/json"
+        "log"
+
+        "github.com/JeanCarlosRothenburg/payment-service/internal/usecase/payment"
+        amqp "github.com/rabbitmq/amqp091-go"
+)
+
+type Consumer struct {
+        channel   *amqp.Channel
+        paymentUC payment.UseCase
+        publisher *Publisher
+}
+
+func NewConsumer(ch *amqp.Channel, uc payment.UseCase) *Consumer <span class="cov0" title="0">{
+        return &amp;Consumer{
+                channel:   ch,
+                paymentUC: uc,
+                publisher: NewPublisher(ch),
+        }
+}</span>
+
+func (c *Consumer) Start() <span class="cov0" title="0">{
+        msgs, err := c.channel.Consume(
+                "payment.queue", "", false, false, false, false, nil,
+        )
+
+        if err != nil </span><span class="cov0" title="0">{
+                log.Fatalf("Erro ao registrar consumer: %v", err)
+        }</span>
+
+        <span class="cov0" title="0">log.Println("Payment-Service: aguardando mensagens...")
+
+        for msg := range msgs </span><span class="cov0" title="0">{
+                c.handle(msg)
+        }</span>
+}
+
+func (c *Consumer) handle(msg amqp.Delivery) <span class="cov0" title="0">{
+        var input payment.ProcessPaymentInput
+
+        err := json.Unmarshal(msg.Body, &amp;input)
+
+        if err != nil </span><span class="cov0" title="0">{
+                log.Printf("Falha ao converter o JSON recebido: %v", err)
+                msg.Nack(false, false)
+                return
+        }</span>
+
+        <span class="cov0" title="0">output, err := c.paymentUC.ProcessPayment(context.Background(), input)
+
+        if err != nil </span><span class="cov0" title="0">{
+                log.Printf("Erro ao processar pagamento: %v", err)
+                c.publisher.Publish("payment.failed", output)
+                msg.Nack(false, false)
+                return
+        }</span>
+
+        <span class="cov0" title="0">err = c.publisher.Publish("payment.approved", output)
+        if err != nil </span><span class="cov0" title="0">{
+                log.Printf("Erro ao publicar o resultado do pagamento do pedido %v: %v", input.OrderID, err)
+                msg.Nack(false, true)
+                return
+        }</span>
+
+        <span class="cov0" title="0">msg.Ack(false)</span>
+}
+</pre>
+		
+		<pre class="file" id="file5" style="display: none">package rabbitmq
+
+import (
+        "encoding/json"
+        "log"
+
+        amqp "github.com/rabbitmq/amqp091-go"
+)
+
+type Publisher struct {
+        channel *amqp.Channel
+}
+
+func NewPublisher(ch *amqp.Channel) *Publisher <span class="cov0" title="0">{
+        return &amp;Publisher{channel: ch}
+}</span>
+
+func (p *Publisher) Publish(queue string, body any) error <span class="cov0" title="0">{
+        payload, err := json.Marshal(body)
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+
+        <span class="cov0" title="0">err = p.channel.Publish(
+                "", queue, false, false, 
+                amqp.Publishing{
+                        ContentType: "application/json",
+                        DeliveryMode: amqp.Persistent,
+                        Body: payload,
+                },
+        )
+
+        if err != nil </span><span class="cov0" title="0">{
+                log.Fatalf("Erro ao publicar na fila \"%v\": %v", queue, err)
+        }</span>
+
+        <span class="cov0" title="0">log.Printf("Evento publicado na fila \"%v\"", queue)
+        return nil</span>
+}</pre>
+		
+		<pre class="file" id="file6" style="display: none">package rabbitmq
+
+import amqp "github.com/rabbitmq/amqp091-go"
+
+func setup(ch *amqp.Channel) error <span class="cov0" title="0">{
+        err := ch.ExchangeDeclare(
+                "order.created.exchange", "fanout", true, false, false, false, nil,
+        )
+
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+
+        <span class="cov0" title="0">dlxArgs := amqp.Table{"x-dead-letter-exchange": "dlx.exchange"}
+
+        _, err = ch.QueueDeclare(
+                "payment.queue", true, false, false, false, dlxArgs,
+        )
+
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+
+        <span class="cov0" title="0">err = ch.QueueBind(
+                "payment.queue", "", "order.created.exchange", false, nil,
+        )
+
+        queues := []string{"payment.approved", "payment.failed"}
+
+        for _, queue := range queues </span><span class="cov0" title="0">{
+                _, err = ch.QueueDeclare(
+                        queue, true, false, false, false, nil,
+                )
+
+                if err != nil </span><span class="cov0" title="0">{
+                        return err
+                }</span>
+        }
+
+        <span class="cov0" title="0">return nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file7" style="display: none">package repository
+
+import (
+        "context"
+        "database/sql"
+        "log"
+
+        "github.com/JeanCarlosRothenburg/payment-service/internal/domain/entity"
+)
+
+type PaymentRepositoryPostgreSQL struct {
+        db *sql.DB
+}
+
+func NewPaymentRepository(db *sql.DB) *PaymentRepositoryPostgreSQL <span class="cov0" title="0">{
+        return &amp;PaymentRepositoryPostgreSQL{db: db}
+}</span>
+
+func (r *PaymentRepositoryPostgreSQL) Save(ctx context.Context, p entity.Payment) (entity.Payment, error) <span class="cov0" title="0">{
+        err := r.db.QueryRowContext(ctx,
+                `INSERT INTO payment (order_id, amount, status, method)
+         VALUES ($1, $2, $3, $4)
+                 RETURNING id`,
+                p.OrderID, p.Amount, p.Status, p.Method).Scan(&amp;p.ID)
+
+        if err != nil </span><span class="cov0" title="0">{
+                log.Printf("Erro ao gravar o pagamento no DB: %v", err)
+        }</span>
+
+        <span class="cov0" title="0">return p, err</span>
+}
+
+func (r *PaymentRepositoryPostgreSQL) FindByID(ctx context.Context, id string) (*entity.Payment, error) <span class="cov0" title="0">{
+        row := r.db.QueryRowContext(ctx,
+                `SELECT id, order_id, amount, method, status
+           FROM payment
+          WHERE id = $1`,
+                id)
+
+        var p entity.Payment
+
+        err := row.Scan(
+                &amp;p.ID,
+                &amp;p.OrderID,
+                &amp;p.Amount,
+                &amp;p.Method,
+                &amp;p.Status,
+        )
+
+        if err != nil </span><span class="cov0" title="0">{
+                if err == sql.ErrNoRows </span><span class="cov0" title="0">{
+                        return nil, nil
+                }</span>
+                <span class="cov0" title="0">log.Printf("Erro ao buscar pagamento: %v", err)
+                return nil, err</span>
+        }
+
+        <span class="cov0" title="0">return &amp;p, nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file8" style="display: none">package payment
+
+import (
+        "context"
+
+        "github.com/JeanCarlosRothenburg/payment-service/internal/domain/entity"
+)
+
+func (u *usecase) ProcessPayment(
+        ctx context.Context,
+        input ProcessPaymentInput,
+) (ProcessPaymentOutput, error) <span class="cov8" title="1">{
+        p := entity.Payment{
+                OrderID: input.OrderID,
+                Amount:  input.Amount,
+                Method:  entity.PaymentMethod(input.Method),
+                Status:  entity.PaymentPending,
+        }
+
+        err := p.Process()
+
+        if err != nil </span><span class="cov8" title="1">{
+                return ProcessPaymentOutput{
+                        OrderID: p.OrderID,
+                        Status:  string(entity.PaymentFailed),
+                }, err
+        }</span>
+
+        <span class="cov8" title="1">p, err = u.repo.Save(ctx, p)
+
+        if err != nil </span><span class="cov8" title="1">{
+                return ProcessPaymentOutput{
+                        PaymentID: p.ID,
+                        OrderID:   p.OrderID,
+                        Status:    string(p.Status),
+                }, err
+        }</span>
+
+        <span class="cov8" title="1">return ProcessPaymentOutput{
+                PaymentID: p.ID,
+                OrderID:   p.OrderID,
+                Status:    string(p.Status),
+        }, nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file9" style="display: none">package payment
+
+import (
+        "context"
+
+        "github.com/JeanCarlosRothenburg/payment-service/internal/domain/entity"
+)
+
+func (u *usecase) RefundPayment(
+        ctx context.Context,
+        input RefundPaymentInput,
+) (RefundPaymentOutput, error) <span class="cov8" title="1">{
+        p, err := u.repo.FindByID(ctx, input.PaymentID)
+
+        if err != nil </span><span class="cov8" title="1">{
+                return RefundPaymentOutput{}, err
+        }</span>
+
+        <span class="cov8" title="1">refundedAmount, err := p.Refund(entity.CancelUser(input.CancelUser))
+
+        if err != nil </span><span class="cov8" title="1">{
+                return RefundPaymentOutput{
+                        PaymentID:      p.ID,
+                        OrderID:        p.ID,
+                        RefundedAmount: refundedAmount,
+                        Status:         string(p.Status),
+                }, err
+        }</span>
+
+        <span class="cov8" title="1">savedP, err := u.repo.Save(ctx, *p)
+        p = &amp;savedP
+
+        if err != nil </span><span class="cov8" title="1">{
+                return RefundPaymentOutput{
+                        PaymentID:      p.ID,
+                        OrderID:        p.OrderID,
+                        RefundedAmount: refundedAmount,
+                        Status:         string(p.Status),
+                }, err
+        }</span>
+
+        <span class="cov8" title="1">return RefundPaymentOutput{
+                PaymentID:      p.ID,
+                OrderID:        p.OrderID,
+                RefundedAmount: refundedAmount,
+                Status:         string(p.Status),
+        }, nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file10" style="display: none">package payment
+
+import (
+        "context"
+
+        "github.com/JeanCarlosRothenburg/payment-service/internal/domain/entity"
+)
+
+// Define o modelo para o mock do repositório
+type PaymentRepositoryMock struct {
+        SaveFunc func(entity.Payment) (entity.Payment, error)
+        FindFunc func(ID string) (*entity.Payment, error)
+}
+
+// Método de salvamento do mock do repositório
+func (mock *PaymentRepositoryMock) Save(ctx context.Context, p entity.Payment) (entity.Payment, error) <span class="cov8" title="1">{
+        if mock.SaveFunc != nil </span><span class="cov8" title="1">{
+                return mock.SaveFunc(p)
+        }</span>
+
+        <span class="cov8" title="1">return p, nil</span>
+}
+
+// Método de busca por ID do mock do repositório
+func (mock *PaymentRepositoryMock) FindByID(ctx context.Context, id string) (*entity.Payment, error) <span class="cov8" title="1">{
+        if mock.FindFunc != nil </span><span class="cov8" title="1">{
+                return mock.FindFunc(id)
+        }</span>
+
+        <span class="cov0" title="0">return nil, nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file11" style="display: none">package payment
+
+import "github.com/JeanCarlosRothenburg/payment-service/internal/domain/repository"
+
+type usecase struct {
+        repo repository.PaymentRepository
+}
+
+func NewUseCase(repo repository.PaymentRepository) UseCase <span class="cov8" title="1">{
+        return &amp;usecase{
+                repo: repo,
+        }
+}</pre>
+		
+		</div>
+	</body>
+	<script>
+	(function() {
+		var files = document.getElementById('files');
+		var visible;
+		files.addEventListener('change', onChange, false);
+		function select(part) {
+			if (visible)
+				visible.style.display = 'none';
+			visible = document.getElementById(part);
+			if (!visible)
+				return;
+			files.value = part;
+			visible.style.display = 'block';
+			location.hash = part;
+		}
+		function onChange() {
+			select(files.value);
+			window.scrollTo(0, 0);
+		}
+		if (location.hash != "") {
+			select(location.hash.substr(1));
+		}
+		if (!visible) {
+			select("file0");
+		}
+	})();
+	</script>
+</html>
