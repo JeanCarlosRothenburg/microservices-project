@@ -74,13 +74,12 @@ jobs:
       - name: Definir tag da imagem
         id: tag
         run: |
-          BRANCH=${GITHUB_REF_NAME}
           SHA=${GITHUB_SHA::7}
-          if [ "$BRANCH" = "main" ]; then
-            echo "tag=${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:homol-${SHA}" >> $GITHUB_OUTPUT
+          if [ "$GITHUB_REF_NAME" = "main" ]; then
+            echo "tag=${{ secrets.DOCKER_USERNAME }}/estoque-service:homol-${SHA}" >> $GITHUB_OUTPUT
             echo "env=homol" >> $GITHUB_OUTPUT
           else
-            echo "tag=${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:dev-${SHA}" >> $GITHUB_OUTPUT
+            echo "tag=${{ secrets.DOCKER_USERNAME }}/estoque-service:dev-${SHA}" >> $GITHUB_OUTPUT
             echo "env=dev" >> $GITHUB_OUTPUT
           fi
 
