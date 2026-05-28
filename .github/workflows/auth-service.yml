@@ -31,6 +31,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Docker login manual
+        run: |
+          echo "${{ secrets.AUTH_SERVICE_DOCKER_PASSWORD }}" | docker login -u jeanrothenburg --password-stdin
+
       - name: Setup python
         uses: actions/setup-python@v5
         with:
