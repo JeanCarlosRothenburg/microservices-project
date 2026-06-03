@@ -1,0 +1,119 @@
+name: Pedido Service — CI/CD
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - "services/pedido/**"
+      - ".github/workflows/pedido.yml"
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - "services/pedido/**"
+
+jobs:
+  # ─────────────────────────────────────────
+  # CI: Build + Testes + Análise
+  # ─────────────────────────────────────────
+  ci:
+    name: Build & Test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/pedido
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Configurar Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+          cache-dependency-path: services/pedido/requirements*.txt
+
+      - name: Instalar dependências
+        run: pip install -r requirements.txt -r requirements-dev.txt
+
+      - name: Rodar testes com cobertura
+        run: pytest --cov=app --cov-report=xml --cov-report=term-missing
+        env:
+          USE_MOCK: "true"
+          JWT_SECRET: "jwt_secret_test"
+          DATABASE_URL: "sqlite:///./test.db"
+          RABBITMQ_URL: "amqp://guest:guest@localhost/"
+
+      - name: Análise SonarCloud
+        uses: SonarSource/sonarcloud-github-action@master
+        with:
+          projectBaseDir: services/pedido
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN_PEDIDO }}
+
+  # ─────────────────────────────────────────
+  # Build e publicação da imagem Docker
+  # ─────────────────────────────────────────
+  docker:
+    name: Docker Build & Push
+    runs-on: ubuntu-latest
+    needs: ci
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Login no Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Definir tag da imagem
+        id: tag
+        shell: bash
+        run: |
+          SHA=$(echo $GITHUB_SHA | cut -c1-7)
+          DOCKER_USER="${{ secrets.DOCKER_USERNAME }}"
+          if [ "$GITHUB_REF_NAME" = "main" ]; then
+            ENV="homol"
+          else
+            ENV="dev"
+          fi
+          TAG="${DOCKER_USER}/pedido-service:${ENV}-${SHA}"
+          echo "tag=${TAG}" >> $GITHUB_OUTPUT
+
+      - name: Build e push da imagem
+        uses: docker/build-push-action@v5
+        with:
+          context: services/pedido
+          push: true
+          tags: ${{ steps.tag.outputs.tag }}
+
+  # ─────────────────────────────────────────
+  # CD: Deploy no Render
+  # ─────────────────────────────────────────
+  deploy-dev:
+    name: Deploy DEV (develop)
+    runs-on: ubuntu-latest
+    needs: docker
+    if: github.ref == 'refs/heads/develop'
+
+    steps:
+      - name: Trigger deploy no Render (DEV)
+        run: |
+          curl -s -X POST "${{ secrets.RENDER_DEPLOY_HOOK_PEDIDO_DEV }}"
+          echo "Deploy DEV disparado com sucesso"
+
+  deploy-homol:
+    name: Deploy HOMOL (main)
+    runs-on: ubuntu-latest
+    needs: docker
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Trigger deploy no Render (HOMOL)
+        run: |
+          curl -s -X POST "${{ secrets.RENDER_DEPLOY_HOOK_PEDIDO_HOMOL }}"
+          echo "Deploy HOMOL disparado com sucesso"
