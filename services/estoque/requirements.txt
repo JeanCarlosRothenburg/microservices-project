@@ -3,4 +3,4 @@ PyJWT[crypto]
 sqlalchemy
 psycopg2-binary
 aio-pika
-prometheus-fastapi-instrumentator
+prometheus-fastapi-instrumentator=7.1.0
