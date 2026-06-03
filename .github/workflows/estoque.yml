@@ -73,16 +73,17 @@ jobs:
 
       - name: Definir tag da imagem
         id: tag
+        shell: bash
         run: |
-          BRANCH=${GITHUB_REF_NAME}
-          SHA=${GITHUB_SHA::7}
-          if [ "$BRANCH" = "main" ]; then
-            echo "tag=${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:homol-${SHA}" >> $GITHUB_OUTPUT
-            echo "env=homol" >> $GITHUB_OUTPUT
+          SHA=$(echo $GITHUB_SHA | cut -c1-7)
+          DOCKER_USER="${{ secrets.DOCKER_USERNAME }}"
+          if [ "$GITHUB_REF_NAME" = "main" ]; then
+            ENV="homol"
           else
-            echo "tag=${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:dev-${SHA}" >> $GITHUB_OUTPUT
-            echo "env=dev" >> $GITHUB_OUTPUT
+            ENV="dev"
           fi
+          TAG="${DOCKER_USER}/estoque-service:${ENV}-${SHA}"
+          echo "tag=${TAG}" >> $GITHUB_OUTPUT
 
       - name: Build e push da imagem
         uses: docker/build-push-action@v5
@@ -90,7 +91,6 @@ jobs:
           context: services/estoque
           push: true
           tags: ${{ steps.tag.outputs.tag }}
-
   # ─────────────────────────────────────────
   # CD: Deploy no Render
   # ─────────────────────────────────────────
