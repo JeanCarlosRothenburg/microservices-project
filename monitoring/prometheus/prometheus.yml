@@ -8,3 +8,15 @@ scrape_configs:
     scheme: https
     static_configs:
       - targets: ["auth-service-homol-mf2c.onrender.com"]
+
+  - job_name: "pedido-service"
+    metrics_path: /metrics
+    scheme: https
+    static_configs:
+      - targets: ["pedido-homol.onrender.com"]
+
+  - job_name: "estoque-service"
+    metrics_path: /metrics
+    scheme: https
+    static_configs:
+      - targets: ["estoque-homol.onrender.com"]
