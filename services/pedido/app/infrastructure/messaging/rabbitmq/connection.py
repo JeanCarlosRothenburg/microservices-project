@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 class RabbitMQConnection:
     def __init__(self):
-        self._url = os.environ.get("RABBITMQ_URL")
+        self._url = os.getenv("RABBITMQ_URL")
         if not self._url:
             raise EnvironmentError("A constante da URL do RabbitMQ não foi encontrada!")
 
