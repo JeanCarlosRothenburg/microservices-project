@@ -21,7 +21,8 @@ Base.metadata.create_all(bind=engine)
 async def lifespan(app: FastAPI):
     # Startup
     rabbitmq_conn = RabbitMQConnection()
-    app.state.rabbitmq = await rabbitmq_conn.connect()
+    await rabbitmq_conn.connect()          
+    app.state.rabbitmq = rabbitmq_conn
     logger.info("RabbitMQ conectado")
     yield
     # Shutdown
