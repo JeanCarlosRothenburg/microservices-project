@@ -15,8 +15,6 @@ logger = logging.getLogger(__name__)
 
 SWAGGER_ENABLED = os.getenv("SWAGGER_ENABLED", "true").lower() == "true"
 
-Base.metadata.create_all(bind=engine)
-
 rabbitmq = RabbitMQConnection()
 
 
