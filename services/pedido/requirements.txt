@@ -4,3 +4,4 @@ httpx
 sqlalchemy
 psycopg2-binary
 aio_pika
+prometheus-fastapi-instrumentator==7.1.0
