@@ -2,8 +2,7 @@ import asyncio
 import os
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, Depends
-from fastapi.security import HTTPBearer
+from fastapi import FastAPI
 from prometheus_fastapi_instrumentator import Instrumentator
 
 from app.controller.estoque_controller import router
@@ -42,8 +41,6 @@ async def lifespan(app: FastAPI):
     db.close()
     await rabbitmq.close()
 
-
-security = HTTPBearer()
 
 app = FastAPI(
     title="Estoque Service",
