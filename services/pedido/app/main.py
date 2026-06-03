@@ -17,23 +17,8 @@ SWAGGER_ENABLED = os.getenv("SWAGGER_ENABLED", "true").lower() == "true"
 
 Base.metadata.create_all(bind=engine)
 
-rabbitmq = RabbitMQConnection()
-
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    await rabbitmq.connect()
-    channel = await rabbitmq.channel()
-    consumer = Consumer(channel)
-    await consumer.start()
-    app.state.rabbitmq = rabbitmq
-    yield
-    await rabbitmq.close()
-
-
 app = FastAPI(
     title="Pedido Service",
-    lifespan=lifespan,
     root_path="/pedidos",
     docs_url="/docs" if SWAGGER_ENABLED else None,
     redoc_url="/redoc" if SWAGGER_ENABLED else None,
