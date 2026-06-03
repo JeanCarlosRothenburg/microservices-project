@@ -50,7 +50,6 @@ app = FastAPI(
     version="1.0.0",
     lifespan=lifespan,
     root_path="/estoque",
-    dependencies=[Depends(security)],
     # Desabilita Swagger em HOMOL
     docs_url="/docs" if SWAGGER_ENABLED else None,
     redoc_url="/redoc" if SWAGGER_ENABLED else None,
