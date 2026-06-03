@@ -1,12 +1,22 @@
 services:
-  # Serviço de autenticação
+  # API Gateway
+  nginx:
+    build: ./api-gateway
+    container_name: nginx
+    ports:
+      - "80:80"
+    depends_on:
+      - auth-service
+      - payment-service
+      - payment-postgres
+
+  # Microservices
   auth-service:
     build: ./services/auth-service
     container_name: auth-service
     environment:
       JWT_SECRET: ${JWT_SECRET}
 
-  # INíCIO - Microsserviço de pagamento
   payment-service:
     build: ./services/payment-service
     container_name: payment-service
@@ -29,28 +39,18 @@ services:
       - payment_postgres_data:/var/lib/postgresql
       - ./services/payment-service/internal/infrastructure/database/migrations:/docker-entrypoint-initdb.d
 
-  # FIM - Microsserviço de pagamento
-
-  # API_Gateway
-  nginx:
-    build: ./api-gateway
-    container_name: nginx
-    ports:
-      - "80:80"
-    depends_on:
-      - auth-service
-      - payment-service
-      - payment-postgres
-
-  rabbitmq:
-    image: rabbitmq:4.2.5-management-alpine
-    container_name: rabbitmq
-    ports:
-      - "5672:5672" # AMQP
-      - "15672:15672" # Painel de gestão
+  estoque:
+    build: ./services/estoque
+    container_name: estoque
     environment:
-      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
-      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+      DATABASE_URL: postgresql://postgres:postgres@estoque-db:5432/estoque
+      RABBITMQ_URL: amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672/
+      JWT_SECRET: ${JWT_SECRET}
+    depends_on:
+      estoque-db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_started
 
   estoque-db:
     image: postgres:16
@@ -69,19 +69,6 @@ services:
       timeout: 5s
       retries: 5
 
-  estoque:
-    build: ./services/estoque
-    container_name: estoque
-    environment:
-      DATABASE_URL: postgresql://postgres:postgres@estoque-db:5432/estoque
-      RABBITMQ_URL: amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672/
-      JWT_SECRET: ${JWT_SECRET}
-    depends_on:
-      estoque-db:
-        condition: service_healthy
-      rabbitmq:
-        condition: service_started
-
   pgadmin:
     image: dpage/pgadmin4
     container_name: estoque-pgadmin
@@ -92,6 +79,21 @@ services:
       - "8080:80"
     depends_on:
       - estoque-db
+
+  pedido:
+    build: ./services/pedido
+    container_name: pedido_service
+    environment:
+      JWT_SECRET: ${JWT_SECRET}
+      DATABASE_URL: postgresql://pedido_user:pedido_pass@pedido-db:5432/pedido_db # era @db:
+      USE_MOCK: "true"
+      AUTO_APPROVE: "false"
+      RABBITMQ_URL: amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672/
+    depends_on:
+      pedido-db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_started
 
   pedido-db:
     image: postgres:16
@@ -110,22 +112,48 @@ services:
       timeout: 5s
       retries: 10
 
-  pedido:
-    build: ./services/pedido
-    container_name: pedido_service
+  # Mensageria
+  rabbitmq:
+    image: rabbitmq:4.2.5-management-alpine
+    container_name: rabbitmq
+    ports:
+      - "5672:5672" # AMQP
+      - "15672:15672" # Painel de gestão
     environment:
-      JWT_SECRET: ${JWT_SECRET}
-      DATABASE_URL: postgresql://pedido_user:pedido_pass@pedido-db:5432/pedido_db # era @db:
-      USE_MOCK: "true"
-      AUTO_APPROVE: "false"
-      RABBITMQ_URL: amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672/
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+
+  # Observabilidade
+  prometheus:
+    build: ./monitoring/prometheus
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    restart: unless-stopped
     depends_on:
-      pedido-db:
-        condition: service_healthy
-      rabbitmq:
-        condition: service_started
+      - auth-service
+      - payment-service
+      - pedido
+      - estoque
+
+  grafana:
+    build: ./monitoring/grafana
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD}
+    volumes:
+      - grafana_data:/var/lib/grafana
+    restart: unless-stopped
+    depends_on:
+      - prometheus
 
 volumes:
   payment_postgres_data:
   estoque_data:
   pedido_pgdata:
+  grafana_data:

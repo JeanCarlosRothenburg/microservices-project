@@ -2,3 +2,4 @@ bcrypt
 email-validator
 fastapi[standard]
 PyJWT[crypto]
+prometheus-fastapi-instrumentator==7.1.0
