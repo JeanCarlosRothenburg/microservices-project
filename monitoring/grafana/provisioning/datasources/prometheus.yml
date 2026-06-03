@@ -4,6 +4,6 @@ datasources:
   - name: Prometheus
     type: prometheus
     acess: proxy
-    url: http://prometheus:9090
+    url: https://prometheus-aocs.onrender.com
     isDefault: true
     editable: true
