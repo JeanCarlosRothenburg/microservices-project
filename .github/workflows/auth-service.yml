@@ -1,19 +1,15 @@
 name: Auth-Service - CI/CD Pipeline
 on:
   push:
-    branches:
-      - main
-      - develop
-      - feature/**
-    paths:
-      - "services/auth-service/**"
+    tags:
+      - "v*"
 
   pull_request:
     branches:
       - main
       - develop
     paths:
-      - "/services/auth-service/**"
+      - "services/auth-service/**"
 
 jobs:
   auth-service:
@@ -53,8 +49,11 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.AUTH_SERVICE_SONAR_KEY }}
 
+      - name: Get version from Git tag
+        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+
       - name: Docker Image build
-        run: docker build -t auth-service .
+        run: docker build -t auth-service:${{ env.VERSION }} .
 
       - name: Docker Hub authentication
         if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main'
@@ -66,13 +65,17 @@ jobs:
       - name: Docker Image push (DEV)
         if: github.ref == 'refs/heads/develop'
         run: |
+          docker tag auth-service ${{ secrets.AUTH_SERVICE_DOCKER_USERNAME }}/auth-service:${{ env.VERSION }}
           docker tag auth-service ${{ secrets.AUTH_SERVICE_DOCKER_USERNAME }}/auth-service:dev
+          docker push ${{ secrets.AUTH_SERVICE_DOCKER_USERNAME}}/auth-service:${{ env.VERSION }}
           docker push ${{ secrets.AUTH_SERVICE_DOCKER_USERNAME}}/auth-service:dev
 
       - name: Docker Image push (HOMOL)
         if: github.ref == 'refs/heads/main'
         run: |
+          docker tag auth-service ${{ secrets.AUTH_SERVICE_DOCKER_USERNAME }}/auth-service:${{ env.VERSION }}
           docker tag auth-service ${{ secrets.AUTH_SERVICE_DOCKER_USERNAME }}/auth-service:latest
+          docker push ${{ secrets.AUTH_SERVICE_DOCKER_USERNAME }}/auth-service:${{ env.VERSION }}
           docker push ${{ secrets.AUTH_SERVICE_DOCKER_USERNAME }}/auth-service:latest
 
       - name: Deploy (DEV)
