@@ -11,7 +11,9 @@ from app.infrastructure.database.database import engine, Base, SessionLocal
 import app.infrastructure.database.produto_model
 from app.infrastructure.messaging.rabbitmq.connection import RabbitMQConnection
 from app.infrastructure.messaging.rabbitmq.consumer import Consumer
-from app.infrastructure.database.produto_repository_postgres import ProdutoRepositoryPostgres
+from app.infrastructure.database.produto_repository_postgres import (
+    ProdutoRepositoryPostgres,
+)
 from app.services.estoque_service import EstoqueService
 
 # Controla se o Swagger fica habilitado (DEV=true, HOMOL=false)
@@ -56,7 +58,9 @@ app = FastAPI(
 )
 
 # Expõe /metrics para o Prometheus
-Instrumentator().instrument(app).expose(app, include_in_schema=False)
+Instrumentator().instrument(app).expose(
+    app, include_in_schema=False, endpoint="/metrics"
+)
 
 app.include_router(router)
 
