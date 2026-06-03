@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 SWAGGER_ENABLED = os.getenv("SWAGGER_ENABLED", "true").lower() == "true"
 
-@asynccontextmanager
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
     title="Pedido Service",
@@ -26,9 +26,7 @@ app = FastAPI(
 )
 
 # Expõe /metrics para o Prometheus
-Instrumentator().instrument(app).expose(
-    app, include_in_schema=False, endpoint="/metrics"
-)
+Instrumentator().instrument(app).expose(app, include_in_schema=False)
 
 
 @app.get("/health", include_in_schema=False)
@@ -40,5 +38,4 @@ app.include_router(pedido_router, prefix="/pedidos", tags=["Pedidos"])
 
 if os.getenv("DISABLE_AUTH", "false").lower() == "true":
     from app.infrastructure.security.auth_dependency import get_current_user
-
     app.dependency_overrides[get_current_user] = lambda: {"email": "user@email.com"}
