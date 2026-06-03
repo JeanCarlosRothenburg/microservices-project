@@ -41,7 +41,9 @@ app = FastAPI(
 )
 
 # Expõe /metrics para o Prometheus
-Instrumentator().instrument(app).expose(app, include_in_schema=False)
+Instrumentator().instrument(app).expose(
+    app, include_in_schema=False, endpoint="/metrics"
+)
 
 
 @app.get("/health", include_in_schema=False)
@@ -53,4 +55,5 @@ app.include_router(pedido_router, prefix="/pedidos", tags=["Pedidos"])
 
 if os.getenv("DISABLE_AUTH", "false").lower() == "true":
     from app.infrastructure.security.auth_dependency import get_current_user
+
     app.dependency_overrides[get_current_user] = lambda: {"email": "user@email.com"}
