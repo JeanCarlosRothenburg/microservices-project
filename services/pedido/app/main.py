@@ -20,6 +20,7 @@ Base.metadata.create_all(bind=engine)
 app = FastAPI(
     title="Pedido Service",
     root_path="/pedidos",
+    lifespan=lifespan,
     docs_url="/docs" if SWAGGER_ENABLED else None,
     redoc_url="/redoc" if SWAGGER_ENABLED else None,
     openapi_url="/openapi.json" if SWAGGER_ENABLED else None,
