@@ -127,6 +127,3 @@ Microsserviço responsável por processar pagamentos.
 |     RN-04     | Pagamentos devem ser reembolsados somente se o status do pedido for `APROVADO`                 |
 |     RN-05     | Para cancelamentos efetuados por usuários o reembolso será de 70% do valor total do pedido     |
 |     RN-06     | Para cancelamento efetuados pela loja o reembolso será correspondente ao valor total do pedido |
-# debug docker login
-# debug docker login
-# debug docker login
