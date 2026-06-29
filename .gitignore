@@ -12,3 +12,4 @@ __pycache__
 keys
 *pem
 .env
+k8s/**/secret.yml
