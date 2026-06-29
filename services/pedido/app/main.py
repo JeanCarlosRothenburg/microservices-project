@@ -17,18 +17,6 @@ SWAGGER_ENABLED = os.getenv("SWAGGER_ENABLED", "true").lower() == "true"
 
 Base.metadata.create_all(bind=engine)
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    # Startup
-    rabbitmq_conn = RabbitMQConnection()
-    await rabbitmq_conn.connect()          
-    app.state.rabbitmq = rabbitmq_conn
-    logger.info("RabbitMQ conectado")
-    yield
-    # Shutdown
-    await app.state.rabbitmq.close()
-    logger.info("RabbitMQ desconectado")
-
 app = FastAPI(
     title="Pedido Service",
     root_path="/pedidos",
