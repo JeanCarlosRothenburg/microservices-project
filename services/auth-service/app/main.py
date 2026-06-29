@@ -6,12 +6,17 @@ from prometheus_fastapi_instrumentator import Instrumentator
 swagger_enabled = os.getenv("SWAGGER_ENABLED", "true").lower() == "true"
 
 app = FastAPI(
-    root_path="/auth",
     docs_url="/docs" if swagger_enabled else None,
     redoc_url="/redoc" if swagger_enabled else None,
     openapi_url="/openapi.json" if swagger_enabled else None,
 )
 
 Instrumentator().instrument(app).expose(app)
+
+
+@app.get("/health", include_in_schema=False)
+def health():
+    return {"status": "ok"}
+
 
 app.include_router(auth_router)
