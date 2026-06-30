@@ -20,8 +20,8 @@ spec:
     spec:
       containers:
         - name: estoque
-          image: jeanrothenburg/estoque-service:latest
-          imagePullPolicy: Always
+          image: estoque-service:local
+          imagePullPolicy: Never
           ports:
             - containerPort: 8000
           envFrom:
