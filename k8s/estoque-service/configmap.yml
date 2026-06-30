@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: estoque-config
+  labels:
+    app: estoque
+data:
+  SWAGGER_ENABLED: "true"
