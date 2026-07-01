@@ -1,5 +1,6 @@
 bcrypt
 email-validator
-fastapi[standard]
+fastapi==0.136.0
+uvicorn
 PyJWT[crypto]
 prometheus-fastapi-instrumentator==7.1.0

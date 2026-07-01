@@ -11,8 +11,6 @@ app = FastAPI(
     openapi_url="/openapi.json" if swagger_enabled else None,
 )
 
-Instrumentator().instrument(app).expose(app)
-
 
 @app.get("/health", include_in_schema=False)
 def health():
@@ -20,3 +18,5 @@ def health():
 
 
 app.include_router(auth_router)
+
+Instrumentator().instrument(app).expose(app)
