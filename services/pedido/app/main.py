@@ -15,7 +15,20 @@ logger = logging.getLogger(__name__)
 
 SWAGGER_ENABLED = os.getenv("SWAGGER_ENABLED", "true").lower() == "true"
 
-Base.metadata.create_all(bind=engine)
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    Base.metadata.create_all(bind=engine)
+
+    rabbitmq = RabbitMQConnection()
+    await rabbitmq.connect()
+    channel = await rabbitmq.channel()
+    consumer = Consumer(channel)
+    await consumer.start()
+    app.state.rabbitmq = rabbitmq
+    yield
+    await rabbitmq.close()
+
 
 app = FastAPI(
     title="Pedido Service",
@@ -26,16 +39,15 @@ app = FastAPI(
     openapi_url="/openapi.json" if SWAGGER_ENABLED else None,
 )
 
-# Expõe /metrics para o Prometheus
-Instrumentator().instrument(app).expose(app, include_in_schema=False)
+Instrumentator().instrument(app).expose(app, include_in_schema=False, endpoint="/metrics")
+
+app.include_router(pedido_router, prefix="/pedidos", tags=["Pedidos"])
 
 
 @app.get("/health", include_in_schema=False)
 def health():
-    return {"message": "Pedido Service funcionando"}
+    return {"message": "Pedido Service funcionando 🚀"}
 
-
-app.include_router(pedido_router, prefix="/pedidos", tags=["Pedidos"])
 
 if os.getenv("DISABLE_AUTH", "false").lower() == "true":
     from app.infrastructure.security.auth_dependency import get_current_user
