@@ -53,12 +53,11 @@ app = FastAPI(
     openapi_url="/openapi.json" if SWAGGER_ENABLED else None,
 )
 
-# Expõe /metrics para o Prometheus
-Instrumentator().instrument(app).expose(
-    app, include_in_schema=False, endpoint="/metrics"
-)
-
 app.include_router(router)
+
+instrumentator = Instrumentator()
+instrumentator.instrument(app)
+instrumentator.expose(app, include_in_schema=False, endpoint="/metrics")
 
 
 @app.get("/health", include_in_schema=False)
