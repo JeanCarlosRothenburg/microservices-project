@@ -5,18 +5,17 @@ global:
 scrape_configs:
   - job_name: "auth-service"
     metrics_path: /metrics
-    scheme: https
     static_configs:
-      - targets: ["auth-service-homol-mf2c.onrender.com"]
+      - targets: ["auth-service-homol:8000"]
 
   - job_name: "pedido-service"
     metrics_path: /metrics
-    scheme: https
+    scheme: http
     static_configs:
-      - targets: ["microservices-project-nej8.onrender.com"]
+      - targets: ["pedido:8000"]
 
   - job_name: "estoque-service"
     metrics_path: /metrics
-    scheme: https
+    scheme: http
     static_configs:
-      - targets: ["estoque-homol.onrender.com"]
+      - targets: ["estoque:8000"]
