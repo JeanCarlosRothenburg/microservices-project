@@ -1,19 +1,19 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: prometheus-ingress
-  annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /
+  name: grafana-ingress
+  labels:
+    app: grafana
 spec:
   ingressClassName: nginx
   rules:
-    - host: prometheus.local
+    - host: grafana
       http:
         paths:
           - path: /
             pathType: Prefix
             backend:
               service:
-                name: prometheus
+                name: grafana
                 port:
-                  number: 9090
+                  number: 3000

@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: configmap-dashboard-provider
+  labels:
+    app: grafana
+data:
+  dashboards.yml: |
+    apiVersion: 1
+    providers:
+      - name: Default
+        folder: Default
+        type: file
+        options:
+          path: /etc/grafana/dashboards
