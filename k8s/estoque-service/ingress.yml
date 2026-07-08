@@ -2,14 +2,16 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: estoque-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
 spec:
   ingressClassName: nginx
   rules:
-    - host: estoque.local
+    - host: app.local
       http:
         paths:
-          - path: /
-            pathType: Prefix
+          - path: /estoque(/|$)(.*)
+            pathType: ImplementationSpecific
             backend:
               service:
                 name: estoque

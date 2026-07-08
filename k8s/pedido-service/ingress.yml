@@ -1,15 +1,17 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: pedido-service-ingress
+  name: pedido-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
 spec:
   ingressClassName: nginx
   rules:
-    - host: pedido.local
+    - host: app.local
       http:
         paths:
-          - path: /
-            pathType: Prefix
+          - path: /pedido(/|$)(.*)
+            pathType: ImplementationSpecific
             backend:
               service:
                 name: pedido-service

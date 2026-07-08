@@ -39,7 +39,9 @@ app = FastAPI(
     openapi_url="/openapi.json" if SWAGGER_ENABLED else None,
 )
 
-Instrumentator().instrument(app).expose(app, include_in_schema=False, endpoint="/metrics")
+Instrumentator().instrument(app).expose(
+    app, include_in_schema=False, endpoint="/metrics"
+)
 
 app.include_router(pedido_router, prefix="/pedidos", tags=["Pedidos"])
 
@@ -51,4 +53,5 @@ def health():
 
 if os.getenv("DISABLE_AUTH", "false").lower() == "true":
     from app.infrastructure.security.auth_dependency import get_current_user
+
     app.dependency_overrides[get_current_user] = lambda: {"email": "user@email.com"}
