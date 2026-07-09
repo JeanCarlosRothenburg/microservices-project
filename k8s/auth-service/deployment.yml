@@ -19,7 +19,7 @@ spec:
     spec:
       containers:
         - name: auth-service
-          image: jeanrothenburg/auth-service:latest
+          image: auth-service:local
           imagePullPolicy: Always
           ports:
             - containerPort: 8000
